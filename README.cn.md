@@ -18,6 +18,7 @@
 [![License](https://img.shields.io/badge/license-MIT-6ea8fe?style=for-the-badge)](LICENSE)
 [![Models](https://img.shields.io/badge/models-17%20served-412991?style=for-the-badge)](https://duiapi.com)
 [![9Router](https://img.shields.io/badge/9Router-connector-8B5CF6?style=for-the-badge)](#-connect-to-9router)
+[![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
 [🛠 快速开始](#-quick-start) · [🎁 免费额度](#-free-tier--how-much-you-get) · [🤖 模型](#-models--all-17-of-them) · [🧪 使用 API](#-how-to-use-the-api) · [✅ 已验证](#-verified-working--every-key-is-tested) · [🧭 工作原理](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [⚙️ 选项](#️-cli-options) · [🛰️ 代理](#️-behind-a-proxy) · [🐞 问题](#-issues)
@@ -178,6 +179,15 @@ node src/connect-9router.js --base http://localhost:20128 --password 123456
 
 默认值：`--prefix duiapi`、`--base-url https://duiapi.com/v1`、`--model deepseek-v4.1-flash`。模型以 `duiapi/<model id>` 形式提供。
 
+## 🔌 连接到 OmniRoute
+
+[OmniRoute](https://omniroute.online) 是一个自托管、兼容 OpenAI 的路由器。DuiAPI 使用 OpenAI 协议，因此注册一次后每个密钥都成为一个连接：
+
+```bash
+node src/connect-omniroute.js --base http://localhost:20128 --password 123456
+```
+
+默认值：`--prefix duiapi`、`--base-url https://duiapi.com/v1`、`--model deepseek-v4.1-flash`。模型以 `duiapi/<model id>` 形式提供。
 ## 🔑 一个密钥能给你什么
 
 | | |

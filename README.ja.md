@@ -18,6 +18,7 @@
 [![License](https://img.shields.io/badge/license-MIT-6ea8fe?style=for-the-badge)](LICENSE)
 [![Models](https://img.shields.io/badge/models-17%20served-412991?style=for-the-badge)](https://duiapi.com)
 [![9Router](https://img.shields.io/badge/9Router-connector-8B5CF6?style=for-the-badge)](#-connect-to-9router)
+[![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
 [🛠 クイックスタート](#-quick-start) · [🎁 無料枠](#-free-tier--how-much-you-get) · [🤖 モデル](#-models--all-17-of-them) · [🧪 API の使い方](#-how-to-use-the-api) · [✅ 検証済み](#-verified-working--every-key-is-tested) · [🧭 仕組み](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [⚙️ オプション](#️-cli-options) · [🛰️ プロキシ](#️-behind-a-proxy) · [🐞 問題](#-issues)
@@ -178,6 +179,15 @@ node src/connect-9router.js --base http://localhost:20128 --password 123456
 
 デフォルト: `--prefix duiapi`、`--base-url https://duiapi.com/v1`、`--model deepseek-v4.1-flash`。モデルは `duiapi/<model id>` として提供されます。
 
+## 🔌 OmniRoute に接続
+
+[OmniRoute](https://omniroute.online) はセルフホスト型の OpenAI 互換ルーターです。DuiAPI は OpenAI を話すので、一度登録すればすべてのキーが接続になります:
+
+```bash
+node src/connect-omniroute.js --base http://localhost:20128 --password 123456
+```
+
+デフォルト: `--prefix duiapi`、`--base-url https://duiapi.com/v1`、`--model deepseek-v4.1-flash`。モデルは `duiapi/<model id>` として提供されます。
 ## 🔑 1 つのキーで得られるもの
 
 | | |
