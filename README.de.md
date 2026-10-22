@@ -88,6 +88,7 @@ Guthaben prüfen (worauf das Tool prüft): `GET /api/user/self` mit dem Konto-To
 cd duiapi-bulk-apikey
 printf 'socks5://host:port\n' > proxies.txt   # optional — without it the tool runs direct
 node src/launcher.js        # interactive: mint / verify / screen / settings
+
 # or directly — three Turnstile tokens per account (see the note below):
 node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
