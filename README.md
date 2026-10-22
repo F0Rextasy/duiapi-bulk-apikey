@@ -45,9 +45,7 @@ DuiAPI is a New API family panel: e-mail + password registration behind a Cloudf
 | Starting quota | **1,000,000** per account (measured on a fresh account, `quotaStart`) |
 | Registration | e-mail + password + Cloudflare Turnstile |
 | E-mail verification | 6-char code from the inbox (18 s measured round-trip) |
-| Model catalogue | **17 ids** (panel pricing); zero-ratio free text models: none — quota is the free tier |
-| Rate limits | register endpoint answered `429` under bursts (24 attempts: 7 keys, 4× register-429, 5× mail-code misses) — pace the run, retries are safe |
-| The unit that scales | **one account = one key** (quota is per account) |
+| Model catalogue | **17 ids**keys verified**one account = one key** (quota is per account) |
 
 > 💡 The free tier is set by DuiAPI and can change. Check the live numbers at [duiapi.com](https://duiapi.com) — and let the tool's own gate decide:
 
