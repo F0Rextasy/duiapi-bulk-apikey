@@ -116,7 +116,11 @@ function nextToken() {
     try {
       const out = require('child_process').execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', TOKEN_CMD], { encoding: 'utf8', timeout: 300000, windowsHide: true });
       const line = String(out).split(/\r?\n/).map((s) => s.trim()).filter(Boolean).pop() || '';
-      const m = line.match(/[A-Za-z0-9_-]{40,}/);
+      // Turnstile tokens are `<ver>.<seg>.<seg>…` (dots!) and the version prefix is not
+      // fixed: patchright-built tokens are `1.<payload>.<fp>`, the captcha-solve rail is
+      // `0.<seg>.<seg>`. With `[A-Za-z0-9_-]{40,}` both truncate at the first dot → CF
+      // `Turnstile verification failed`. Any dotted/plain run ≥40 chars is the token.
+      const m = line.match(/[0-9A-Za-z_][A-Za-z0-9._-]{39,}$/) || line.match(/[A-Za-z0-9_.-]{40,}/) || line.match(/[A-Za-z0-9_-]{40,}/);
       if (m) { tokenIdx++; return m[0]; }
     } catch (e) { /* fall through */ }
   }
