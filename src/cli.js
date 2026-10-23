@@ -30,7 +30,9 @@
  *   --group <name>   token group the key is created in             [default]
  *   --pool <file>    proxy list, one exit per line (env DUIAPI_PROXIES) [optional]
  *   --token T        Turnstile tokens, comma separated (three per account)
- *   --token-cmd CMD  command that prints one fresh token (run once per step)
+ *   --token-cmd CMD  advanced escape hatch: a command that prints one fresh token
+ *   --auto           solve the Turnstile with the embedded solver         [on]
+ *   --no-auto        disable the embedded solver (use --token/--token-cmd)
  *   --tries N        exits tried per account before giving up           [2]
  *   --timeout MS     per-request timeout                             [60000]
  *   --verify-only    re-run every key in keys.txt through the chat gate
@@ -51,6 +53,7 @@ const crypto = require('crypto');
 
 const ROOT = path.basename(__dirname) === 'src' ? path.resolve(__dirname, '..') : __dirname;
 const KEYS_FILE = path.join(ROOT, 'keys.txt');
+const DEAD_FILE = path.join(ROOT, 'keys-dead.txt');
 const ACCOUNTS_FILE = path.join(ROOT, 'accounts.json');
 const OUT_DIR = path.join(ROOT, 'out');
 
@@ -83,17 +86,20 @@ if (has('help') || has('h')) {
   --model <id>   model used for the live gate         [deepseek-v4.1-flash]
   --group <name> token group the key is created in                   [default]
   --pool <file>  proxy list, one exit per line (env DUIAPI_PROXIES) [optional]
-  --token T      Turnstile tokens, comma separated (three per account)
-  --token-cmd C  command that prints one fresh token (run once per step)
+  --dry          resolve the plan, write nothing (no network, no files)
+  --auto         solve the Turnstile with the embedded solver (default)
+  --no-auto      disable the embedded solver
 
 Requests go through your proxy list when one is provided (--pool / env).
 Without a pool the tool connects directly.
 
 Turnstile: this panel gates sendCode/register/login behind Cloudflare Turnstile
-("Turnstile token is empty" without one). Solve the widget on https://duiapi.com
-in any browser and pass tokens with --token (three per account, comma
-separated), or wire a solver with --token-cmd — one fresh token is spent per
-panel call.`);
+("Turnstile token is empty" without one). The bundled src/solver.js solves the
+widget over the account's pinned exit — one command, nothing else to run. A
+headless/server box can wire its own solver instead: see ADVANCED.md.
+If Chrome is not found, install it once (winget install --id Google.Chrome) or
+point CHROME_PATH at it — the embedded solver needs a real browser.
+`);
   process.exit(0);
 }
 
@@ -106,11 +112,21 @@ const MODEL = arg('model', 'deepseek-v4.1-flash');
 const GROUP = arg('group', 'default');
 const VERIFY_ONLY = has('verify-only');
 const SCREEN = has('screen');
+const DRY = has('dry'); // resolve the plan, write nothing, send nothing
 const TOKENS = String(arg('token', '')).split(',').map((s) => s.trim()).filter(Boolean);
 const TOKEN_CMD = arg('token-cmd', process.env.DUIAPI_TOKEN_CMD || null);
+const AUTO = !has('no-auto'); // the embedded solver is the default path (one command, no external hook)
+const SITEKEY = arg('sitekey', process.env.DUIAPI_SITEKEY || '0x4AAAAAAD7T3DPV3wEL8rjR');
 let tokenIdx = 0;
-/** One Cloudflare Turnstile token for one panel call (single-use per step). */
-function nextToken() {
+/** Lazy require: a checkout without src/solver.js still runs off --token / --token-cmd. */
+let _solver = null;
+const solver = () => (_solver && _solver.solveCaptcha ? _solver : (_solver = require('./solver.js')));
+/**
+ * One Cloudflare Turnstile token for one panel call (single-use per step).
+ * Order: --token list → --token-cmd hook → embedded solver (--auto, default).
+ * The solver is pinned to the account's exit so the same exit solves and spends.
+ */
+async function nextToken(exit) {
   if (TOKENS.length > tokenIdx) return TOKENS[tokenIdx++];
   if (TOKEN_CMD) {
     try {
@@ -125,6 +141,10 @@ function nextToken() {
       const m = line.match(/[0-9A-Za-z_][A-Za-z0-9._-]{39,}$/) || line.match(/[A-Za-z0-9_.-]{40,}/) || line.match(/[A-Za-z0-9_-]{40,}/);
       if (m) { tokenIdx++; return m[0]; }
     } catch (e) { /* fall through */ }
+  }
+  if (AUTO) {
+    const r = await solver().solveCaptcha({ type: 'turnstile', sitekey: SITEKEY, url: `${BASE}/register`, proxy: exit ? exit.line : null });
+    if (r && r.token) { tokenIdx++; return r.token; }
   }
   return null;
 }
@@ -358,23 +378,23 @@ async function signUp(exit) {
   if (gates.register_enabled === false) throw new Error('register is disabled on the panel right now');
   const box = await newMailbox(exit);
   const needsTs = gates.turnstile_check === true;
-  const tsFor = (what) => {
+  const tsFor = async (what) => {
     if (!needsTs) return '';
-    const tok = nextToken();
-    if (!tok) throw new Error(`no Turnstile token for ${what} — pass --token (3 per account) or --token-cmd`);
+    const tok = await nextToken(exit);
+    if (!tok) throw new Error(`no Turnstile token for ${what} — the embedded solver (--auto) gave nothing; advanced solver flags: see ADVANCED.md`);
     return `turnstile=${encodeURIComponent(tok)}`;
   };
-  const scQs = tsFor('sendCode');
+  const scQs = await tsFor('sendCode');
   const sc = await exitJson(exit, `${BASE}/api/verification?email=${encodeURIComponent(box.plain)}${scQs ? '&' + scQs : ''}`);
   if (!(sc.json && sc.json.success)) throw new Error(`sendCode HTTP ${sc.status}: ${String(sc.text).slice(0, 140)}`);
   const { code, subject } = await pollCode(exit, box);
-  const regQs = tsFor('register');
+  const regQs = await tsFor('register');
   const reg = await exitJson(exit, `${BASE}/api/user/register${regQs ? '?' + regQs : ''}`, {
     method: 'POST',
     body: { username, password, email: box.plain, verification_code: code },
   });
   if (!(reg.json && reg.json.success)) throw new Error(`register HTTP ${reg.status}: ${String(reg.text).slice(0, 140)}`);
-  const lgQs = tsFor('login');
+  const lgQs = await tsFor('login');
   const lg = await exitJson(exit, `${BASE}/api/user/login${lgQs ? '?' + lgQs : ''}`, { method: 'POST', body: { username, password } });
   const token = lg.json && lg.json.data && lg.json.data.access_token;
   if (!token) throw new Error(`login HTTP ${lg.status}: ${String(lg.text).slice(0, 140)}`);
@@ -433,6 +453,11 @@ async function chatGate(exit, key, model = MODEL) {
 
 async function mint() {
   const exits = loadExits();
+  if (DRY) {
+    console.log('dry run — nothing is written and no request is sent.');
+    console.log(`  count ${COUNT} · conc ${CONC} · model ${MODEL} · exits ${exits.filter(Boolean).length || 'direct'} · solver ${AUTO ? 'embedded src/solver.js (--auto)' : 'off (--no-auto)'}`);
+    return;
+  }
   if (SCREEN) return void (await screen(exits));
   const accounts = loadAccounts();
   log(`weytoken · ${COUNT} key(s) · conc ${CONC} · exits ${exits.filter(Boolean).length || 'direct'} · keys land in keys.txt`);
@@ -470,6 +495,7 @@ async function mint() {
     if (GAP_MS) await sleep(GAP_MS);
   }
   log(`done — ${made}/${COUNT} key(s) written to ${KEYS_FILE}`);
+  console.log(`__MINT_SUMMARY__ ${JSON.stringify({ requested: COUNT, live: made, keysFile: KEYS_FILE, deadFile: DEAD_FILE })}`);
 }
 
 async function verifyOnly() {
@@ -477,17 +503,21 @@ async function verifyOnly() {
   const keys = readKeys();
   if (!keys.length) { console.log(`no keys in ${KEYS_FILE}`); process.exit(0); }
   let live = 0;
+  const dead = [];
   for (let i = 0; i < keys.length; i++) {
     const exit = exits[i % exits.length];
     try {
       const g = await chatGate(exit, keys[i]);
       if (g.ok) live++;
+      else dead.push({ key: keys[i], why: `chat=${g.status}` });
       console.log(`  ${g.ok ? '✔' : '✘'} ${keys[i].slice(0, 8)}… chat=${g.status}`);
     } catch (e) {
+      dead.push({ key: keys[i], why: String(e.message).slice(0, 80) });
       console.log(`  ✘ ${keys[i].slice(0, 8)}… ${String(e.message).slice(0, 90)}`);
     }
   }
-  console.log(`verify: ${live}/${keys.length} keys live`);
+  fs.writeFileSync(DEAD_FILE, dead.map((d) => `${d.key}\t# ${d.why}`).join('\n') + (dead.length ? '\n' : ''));
+  console.log(`verify: ${live}/${keys.length} keys live — the ${dead.length} dead one(s) are in ${DEAD_FILE}`);
   process.exit(live === keys.length ? 0 : 1);
 }
 
