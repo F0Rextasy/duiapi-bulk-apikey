@@ -150,7 +150,7 @@ async function nextToken(exit) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-fs.mkdirSync(OUT_DIR, { recursive: true });
+if (!DRY) fs.mkdirSync(OUT_DIR, { recursive: true });
 const log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 const randUser = () => `dui${crypto.randomBytes(5).toString('hex')}`;
 const randPass = () => `Dui${crypto.randomBytes(6).toString('base64url')}9a`;

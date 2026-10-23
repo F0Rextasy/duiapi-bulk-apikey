@@ -11,7 +11,7 @@
 
 # duiapi-bulk-apikey
 
-**Otomatik oluşturulan API anahtarlarıyla toplu DuiAPI hesabı oluşturma — OpenAI uyumlu çıkarım + 9Router bağlayıcısı.**
+**Otomatik oluşturulan API anahtarlarıyla toplu DuiAPI hesabı oluşturun — OpenAI uyumlu çıkarım + 9Router bağlayıcısı.**
 
 [![Node](https://img.shields.io/badge/Node-%E2%89%A518-3DA639?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-blue?style=for-the-badge)](#)
@@ -35,9 +35,9 @@
 
 ## ✨ Bu neden var
 
-DuiAPI bir New API ailesi panelidir: Cloudflare Turnstile arkasında e-posta + parola kaydı ve **her yeni hesapta 1.000.000 başlangıç kotası** (`quota_per_unit` 500.000; ilk hesabın bakiyesi 1.000.000 okunur). Katalog, indirim gruplarında (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`) **17 model kimliği** barındırır ve sohbetle doğrulanmış varsayılan `deepseek-v4.1-flash`'tır. Kota hesapta yaşar — bu aracın **her anahtar için bir hesap** oluşturmasının nedeni budur.
+DuiAPI bir New API ailesi panelidir: Cloudflare Turnstile arkasında e-posta + parola kaydı ve **her yeni hesapta 1.000.000 başlangıç kotası** (`quota_per_unit` 500.000; ilk hesabın bakiyesi 1.000.000 okunur). Katalog, indirim grupları (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`) genelinde **17 model kimliği** taşır ve sohbetle doğrulanmış varsayılan `deepseek-v4.1-flash`'tır. Kota hesapta yaşar — bu aracın **anahtar başına bir hesap** oluşturmasının nedeni budur.
 
-## 🎁 Ücretsiz katman — ne kadar elde edersiniz
+## 🎁 Ücretsiz katman — ne kadar alıyorsunuz
 
 **Her yeni DuiAPI hesabı 1.000.000 kota birimiyle başlar.**
 
@@ -47,7 +47,7 @@ DuiAPI bir New API ailesi panelidir: Cloudflare Turnstile arkasında e-posta + p
 | Kayıt | e-posta + parola + Cloudflare Turnstile |
 | E-posta doğrulama | Gelen kutusundan 6 karakterli kod (18 sn ölçülen gidiş-dönüş) |
 | Model kataloğu | **17 kimlik** (panel fiyatlandırması); sıfır oranlı ücretsiz metin modelleri: yok — ücretsiz katman kotadır |
-| Hız sınırları | Kayıt uç noktası ani yüklenmelerde `429` yanıtladı (24 deneme: anahtarlar, 4× kayıt-429, 5× posta kodu ıskası) — çalıştırmayı yavaşlatın, yeniden denemeler güvenlidir |
+| Hız sınırları | Kayıt uç noktası yoğunluk altında `429` yanıtladı (24 deneme: anahtarlar, 4× kayıt-429, 5× posta kodu ıskası) — çalıştırmayı yavaşlatın, yeniden denemeler güvenlidir |
 | Ölçeklenen birim | **bir hesap = bir anahtar** (kota hesap başınadır) |
 
 > 💡 Ücretsiz katman DuiAPI tarafından belirlenir ve değişebilir. Canlı sayıları [duiapi.com](https://duiapi.com) adresinden kontrol edin — ve kararı aracın kendi kapısına bırakın:
@@ -81,7 +81,7 @@ print(c.chat.completions.create(model="deepseek-v4.1-flash",
       messages=[{"role":"user","content":"hi"}]).choices[0].message.content)
 ```
 
-Bakiye kontrolü (aracın kapı olarak kullandığı): hesap belirteciyle `GET /api/user/self` veya 1 belirteçli bir sohbet çağrısı.
+Bakiye kontrolü (aracın kapı olarak kullandığı şey): hesap token'ıyla `GET /api/user/self` veya 1 token'lık bir sohbet çağrısı.
 
 ## 🛠 Hızlı başlangıç
 
@@ -95,18 +95,37 @@ node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
-DuiAPI, kayıt/sendCode/giriş çağrılarını bir Cloudflare Turnstile arkasında tutar, bu nedenle çağrı başına bir taze belirteç harcanır (hesap başına üç): herhangi bir tarayıcıda <https://duiapi.com> üzerindeki widget'ı çözün ve `cf-turnstile-response` değerlerini yapıştırın veya `--token-cmd`'yi stdout'a bir belirteç yazdıran bir çözücüye yönlendirin. `keys.txt` **yalnızca** canlı bir sohbet tamamlamasından sonra yazılır; `accounts.json` kullanıcı adını / e-postayı / anahtar kimliğini saklar.
+DuiAPI, kayıt/sendCode/giriş çağrılarını bir Cloudflare Turnstile arkasında tutar, bu nedenle çağrı başına bir yeni token harcanır (hesap başına üç): herhangi bir tarayıcıda <https://duiapi.com> üzerindeki widget'ı çözün ve `cf-turnstile-response` değerlerini yapıştırın veya `--token-cmd`'yi stdout'a bir token yazdıran bir çözücüye yönlendirin. `keys.txt` **yalnızca** canlı bir sohbet tamamlamasından sonra yazılır; `accounts.json` kullanıcı adını / e-postayı / anahtar kimliğini saklar.
 
 ### 🖱️ Başlatıcı
 
-Başlatıcı proxy listesini (isteğe bağlı — olmadan CLI doğrudan çalışır) ve sayıyı sorar, bunları hatırlar ve CLI'yi çalıştırır — oluştur, doğrula, çıkışları tara, ayarlar, yardım, 9Router'a Bağlan.
+Başlatıcı proxy listesini (isteğe bağlı — olmadan CLI doğrudan çalışır) ve sayıyı sorar, bunları hatırlar ve CLI'yi çalıştırır — mint, verify, screen exits, settings, help, Connect to 9Router.
+
+## 🚀 Tek komut
+
+Captcha sizin için çözülür — tek komut N hesap oluşturur ve yalnızca canlı bir sohbet çağrısının doğruladığı anahtarları saklar:
+
+```bash
+npm install                  # once: pulls puppeteer-core
+npm start                    # menu → "1) Mint keys" → "How many keys?" (Enter = 10)
+# or non-interactive:
+node src/cli.js --count N
+```
+
+`--auto` varsayılandır ve hiçbir şeyin geçirilmesi gerekmez: gömülü `src/solver.js`, hesabın kendi çıkışı üzerinden başsız olmayan bir Chrome açar ve panelin Turnstile token'ını otomatik olarak döndürür. `--dry` çözümlenen planı yazdırır ve **hiçbir dosya yazmadan ve hiçbir ağ çağrısı yapmadan** çıkar.
+
+> ⚠️ **Şartlar ve hesap riski.** Bu bir otomasyon aracıdır, hesap satıcısı değildir. Toplu kayıtlar ve anahtar üretimi tamamen sizin sorumluluğunuzdadır: sağlayıcının Hizmet Şartlarını ihlal edebilir ve adreslerin, çıkışların veya hesapların engellenmesine yol açabilir. Yalnızca otomatikleştirmeye izinli olduğunuz altyapıda kullanın ve istek hızını düşük tutun.
+
+## 🔧 Gelişmiş (isteğe bağlı)
+
+Kendi çözücünüzü bağlamak, elle bir token yapıştırmak veya aracı belirli bir Chrome'a yönlendirmek **[ADVANCED.md](ADVANCED.md)** içinde belgelenmiştir. Yaygın yol bunların hiçbirine ihtiyaç duymaz.
 
 ## ✅ Çalıştığı doğrulandı — her anahtar test edilir
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `GET /api/status` | **200**, kayıt+e-posta doğrulama+turnstile hepsi true, sitekey mevcut |
-| `POST /api/user/register` (Turnstile belirteci) | **200** `{"message":"","success":true}` |
+| `POST /api/user/register` (Turnstile token) | **200** `{"message":"","success":true}` |
 | `GET /api/verification` | **200** + gelen kutusundan 6 karakterli kod (`DuiAPI email verification`) |
 | `POST /api/user/login` | **200** · `quota 1000000` |
 | `POST /v1/chat/completions` (`deepseek-v4.1-flash`) — yazılmadan önce **her** anahtar için | gerçek `choices[0].message.content` ve bir kota deltasıyla **200** |
@@ -117,8 +136,8 @@ node src/cli.js --verify-only
 node src/cli.js --screen
 ```
 
-> **Kalite kapıları.** Buradaki her anahtar, `keys.txt`'ye yazılmadan önce canlı bir `chat-200` geçti
-> (ölü anahtarlar asla gönderilmez). Yönlendirici kombinasyonları model düzeyinde aynı kuralı izler: bir giriş
+> **Kalite kapıları.** Buradaki her anahtar `keys.txt` dosyasına yazılmadan önce canlı bir `chat-200` geçti
+> (ölü anahtarlar asla gönderilmez). Router kombinasyonları model düzeyinde aynı kuralı izler: bir giriş
 > **yalnızca model `chat-200` yanıtlıyorsa ve araçları çağırabiliyorsa** eklenir — araç desteği olmayan bir model,
 > ölü bir anahtar veya ölü bir sağlayıcı eklenmek yerine çıkarılır. Doğrulama adımını istediğiniz zaman yeniden çalıştırın;
 > başarısızlıklar bildirilir, asla gizlenmez.
@@ -137,11 +156,11 @@ inbox (one address per account)                                  a fresh address
 | Adım | Çağrı | Notlar |
 | --- | --- | --- |
 | durum | `GET /api/status` | kapılar: kayıt açık, e-posta doğrulama açık, turnstile açık (sitekey panel tarafından sunulur) |
-| kayıt | panel kayıt sayfası → Turnstile (tarayıcıda çözülür) → `POST /api/user/register` | belirteç tek kullanımlıktır; her kayıt/sendCode için taze bir tane |
-| doğrulama | `GET /api/verification?email=…` | 6 karakterli kod gelen kutusuna gelir; marka postaları filtrelenir |
-| giriş | `POST /api/user/login` | düz parola (şifreleme kapalı); oturum belirteci elde |
+| kayıt | panel kayıt sayfası → Turnstile (tarayıcıda çözülür) → `POST /api/user/register` | token tek kullanımlıktır; kayıt/sendCode başına yeni bir tane |
+| doğrulama | `GET /api/verification?email=…` | gelen kutusuna 6 karakterli kod gelir; marka postaları filtrelenir |
+| giriş | `POST /api/user/login` | düz parola (şifreleme kapalı); oturum token'ı elde |
 | anahtar | `POST /api/token/` (+ reveal) | anahtar bir kez döndürülür, hemen diske yazılır |
-| kanıt | `POST /v1/chat/completions` | içerikli chat-200 = anahtar canlı |
+| kanıt | `POST /v1/chat/completions` | içerikle chat-200 = anahtar canlı |
 
 ## ⚙️ CLI seçenekleri
 
@@ -162,8 +181,8 @@ node src/cli.js --help
 
 **İsteğe bağlı — ölçekte önerilir (IP başına sınırlar, yasaklar).** Araç proxy olmadan da çalışır.
 
-- **Havuzla:** `--pool <file>` geçin (veya `DUIAPI_PROXIES` ayarlayın) ve her istek o listeden bir çıkıştan geçer — ölü bir hat o denemeyi başarısız kılar ve araç devam eder. Kayıt kayıplı adımdır (ani yüklenmede `429`) — araç bir sonraki çıkışla yeniden dener ve tasarım gereği yavaşlar.
-- **Havuz olmadan:** CLI `running WITHOUT a proxy (direct)` yazdırır ve doğrudan bağlanır. Kayıt, anahtar oluşturma veya doğrulama konusunda hiçbir şey değişmez — yalnızca paketlerin nereden çıktığı değişir.
+- **Havuzla:** `--pool <file>` geçirin (veya `DUIAPI_PROXIES` ayarlayın) ve her istek o listeden bir çıkış üzerinden gider — ölü bir hat o denemeyi başarısız kılar ve araç devam eder. Kayıt kayıplı adımdır (yoğunluk altında `429`) — araç bir sonraki çıkışla yeniden dener ve tasarım gereği hızı ayarlar.
+- **Havuz olmadan:** CLI `running WITHOUT a proxy (direct)` yazdırır ve doğrudan bağlanır. Kayıt, anahtar üretimi veya doğrulama hakkında hiçbir şey değişmez — yalnızca paketlerin nereden çıktığı değişir.
 - Her iki moda karşı `--screen` çalıştırın: gerçek bir çalıştırmadan önce sahip olduğunuz çıkışları (veya doğrudan rotayı) DuiAPI'ye karşı test eder.
 
 ## 📄 Dosyalar
@@ -177,7 +196,7 @@ node src/cli.js --help
 
 ## 🔌 9Router'a bağlan
 
-[9Router](https://9router.com) kendi kendine barındırılan, OpenAI uyumlu bir yönlendiricidir. DuiAPI OpenAI konuşur, bu nedenle bir kez kaydolun ve her anahtar bir bağlantı haline gelir:
+[9Router](https://9router.com) kendi kendine barındırılan, OpenAI uyumlu bir yönlendiricidir. DuiAPI OpenAI konuşur, bu nedenle bir kez kaydolun ve her anahtar bir bağlantı olur:
 
 ```bash
 node src/connect-9router.js --base http://localhost:20128 --password 123456
@@ -187,7 +206,7 @@ Varsayılanlar: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model 
 
 ## 🔌 OmniRoute'a bağlan
 
-[OmniRoute](https://omniroute.online) kendi kendine barındırılan, OpenAI uyumlu bir yönlendiricidir. DuiAPI OpenAI konuşur, bu nedenle bir kez kaydolun ve her anahtar bir bağlantı haline gelir:
+[OmniRoute](https://omniroute.online) kendi kendine barındırılan, OpenAI uyumlu bir yönlendiricidir. DuiAPI OpenAI konuşur, bu nedenle bir kez kaydolun ve her anahtar bir bağlantı olur:
 
 ```bash
 node src/connect-omniroute.js --base http://localhost:20128 --password 123456
@@ -215,6 +234,6 @@ MIT © 2026 — bkz. [LICENSE](LICENSE).
 
 <div align="center">
 
-**[MIT](LICENSE)** © 2026 duiapi-bulk-apikey katkıda bulunanlar
+**[MIT](LICENSE)** © 2026 duiapi-bulk-apikey contributors
 
 </div>

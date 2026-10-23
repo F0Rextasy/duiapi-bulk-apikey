@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Início rápido](#-quick-start) · [🎁 Nível gratuito](#-free-tier--how-much-you-get) · [🤖 Modelos](#-models--all-17-of-them) · [🧪 Use a API](#-how-to-use-the-api) · [✅ Verificado](#-verified-working--every-key-is-tested) · [🧭 Como funciona](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Opções](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Problemas](#-issues)
+[🛠 Início rápido](#-quick-start) · [🎁 Camada gratuita](#-free-tier--how-much-you-get) · [🤖 Modelos](#-models--all-17-of-them) · [🧪 Use a API](#-how-to-use-the-api) · [✅ Verificado](#-verified-working--every-key-is-tested) · [🧭 Como funciona](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Opções](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Problemas](#-issues)
 
 </div>
 
@@ -35,9 +35,9 @@
 
 ## ✨ Por que isto existe
 
-DuiAPI é um painel da família New API: registro com e-mail + senha por trás de um Cloudflare Turnstile, e **cota inicial de 1.000.000 em cada nova conta** (`quota_per_unit` 500.000; o saldo da primeira conta aparece como 1.000.000). O catálogo traz **17 ids de modelos** em grupos com desconto (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`), e o padrão verificado por chat é `deepseek-v4.1-flash`. A cota fica na conta — é por isso que esta ferramenta cria **uma conta por chave**.
+DuiAPI é um painel da família New API: registro com e-mail + senha atrás de um Cloudflare Turnstile, e **cota inicial de 1.000.000 em cada nova conta** (`quota_per_unit` 500.000; o saldo da primeira conta aparece como 1.000.000). O catálogo traz **17 ids de modelos** em grupos de desconto (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`), e o padrão verificado por chat é `deepseek-v4.1-flash`. A cota fica na conta — por isso esta ferramenta cria **uma conta por chave**.
 
-## 🎁 Nível gratuito — quanto você recebe
+## 🎁 Camada gratuita — quanto você recebe
 
 **Toda nova conta DuiAPI começa com 1.000.000 de unidades de cota.**
 
@@ -46,11 +46,11 @@ DuiAPI é um painel da família New API: registro com e-mail + senha por trás d
 | Cota inicial | **1.000.000** por conta (medido em uma conta nova, `quotaStart`) |
 | Registro | e-mail + senha + Cloudflare Turnstile |
 | Verificação de e-mail | código de 6 caracteres da caixa de entrada (ida e volta medida em 18 s) |
-| Catálogo de modelos | **17 ids** (preços do painel); modelos de texto gratuitos com proporção zero: nenhum — a cota é o nível gratuito |
-| Limites de taxa | o endpoint de registro respondeu `429` em rajadas (24 tentativas: chaves, 4× registro-429, 5× falhas de código de e-mail) — controle o ritmo da execução, as tentativas repetidas são seguras |
+| Catálogo de modelos | **17 ids** (preços do painel); modelos de texto gratuitos com proporção zero: nenhum — a cota é a camada gratuita |
+| Limites de taxa | o endpoint de registro respondeu `429` sob rajadas (24 tentativas: chaves, 4× registro-429, 5× falhas de código de e-mail) — controle o ritmo da execução, as tentativas repetidas são seguras |
 | A unidade que escala | **uma conta = uma chave** (a cota é por conta) |
 
-> 💡 O nível gratuito é definido pela DuiAPI e pode mudar. Confira os números ao vivo em [duiapi.com](https://duiapi.com) — e deixe o próprio gate da ferramenta decidir:
+> 💡 A camada gratuita é definida pela DuiAPI e pode mudar. Confira os números ao vivo em [duiapi.com](https://duiapi.com) — e deixe o próprio gate da ferramenta decidir:
 
 ```bash
 node src/cli.js --verify-only     # every key in keys.txt is re-tested with a real chat call
@@ -95,17 +95,36 @@ node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
-A DuiAPI mantém suas chamadas de registro/sendCode/login atrás de um Cloudflare Turnstile, então um token novo é gasto por chamada (três por conta): resolva o widget em <https://duiapi.com> em qualquer navegador e cole os valores de `cf-turnstile-response`, ou aponte `--token-cmd` para um solver que imprima um token na saída padrão. `keys.txt` é escrito **somente** após uma conclusão de chat ao vivo; `accounts.json` guarda o nome de usuário / e-mail / id da chave.
+A DuiAPI mantém suas chamadas de registro/sendCode/login atrás de um Cloudflare Turnstile, então um token novo é gasto por chamada (três por conta): resolva o widget em <https://duiapi.com> em qualquer navegador e cole os valores de `cf-turnstile-response`, ou aponte `--token-cmd` para um solver que imprima um token no stdout. `keys.txt` é escrito **somente** após uma conclusão de chat ao vivo; `accounts.json` guarda o nome de usuário / e-mail / id da chave.
 
 ### 🖱️ O launcher
 
-O launcher pede a lista de proxies (opcional — sem uma, a CLI roda direto) e a quantidade, lembra delas e executa a CLI — mint, verify, screen exits, settings, help, Connect to 9Router.
+O launcher pede a lista de proxies (opcional — sem uma, o CLI roda direto) e a quantidade, lembra delas e executa o CLI — mint, verify, screen exits, settings, help, Connect to 9Router.
+
+## 🚀 Um comando
+
+O captcha é resolvido para você — um comando cria N contas e mantém apenas as chaves que uma chamada de chat ao vivo verificou:
+
+```bash
+npm install                  # once: pulls puppeteer-core
+npm start                    # menu → "1) Mint keys" → "How many keys?" (Enter = 10)
+# or non-interactive:
+node src/cli.js --count N
+```
+
+`--auto` é o padrão e nada precisa ser passado: o `src/solver.js` embutido abre um Chrome com interface sobre a própria saída da conta e retorna o token Turnstile do painel automaticamente. `--dry` imprime o plano resolvido e sai **sem arquivo escrito e sem chamada de rede**.
+
+> ⚠️ **Termos e risco de conta.** Esta é uma ferramenta de automação, não um vendedor de contas. Cadastros em massa e criação de chaves são inteiramente sua responsabilidade: podem violar os Termos de Serviço do provedor e levar ao bloqueio de endereços, saídas ou contas. Use apenas em infraestrutura que você tem permissão para automatizar e mantenha a taxa de requisições baixa.
+
+## 🔧 Avançado (opcional)
+
+Conectar seu próprio solver, colar um token manualmente ou apontar a ferramenta para um Chrome específico estão documentados em **[ADVANCED.md](ADVANCED.md)**. O caminho comum não precisa de nada disso.
 
 ## ✅ Verificado e funcionando — toda chave é testada
 
 | Verificação | Resultado |
 | --- | --- |
-| `GET /api/status` | **200**, register+e-mail verification+turnstile todos true, sitekey presente |
+| `GET /api/status` | **200**, registro+verificação de e-mail+turnstile todos true, sitekey presente |
 | `POST /api/user/register` (token Turnstile) | **200** `{"message":"","success":true}` |
 | `GET /api/verification` | **200** + código de 6 caracteres da caixa de entrada (`DuiAPI email verification`) |
 | `POST /api/user/login` | **200** · `quota 1000000` |
@@ -118,10 +137,10 @@ node src/cli.js --screen
 ```
 
 > **Gates de qualidade.** Toda chave aqui passou por um `chat-200` ao vivo antes de ser escrita em `keys.txt`
-> (chaves mortas nunca são entregues). As combinações do router seguem a mesma regra no nível do modelo: uma entrada é
-> adicionada **somente se o modelo responder `chat-200` e conseguir chamar ferramentas** — um modelo sem suporte a ferramentas,
+> (chaves mortas nunca são entregues). As combinações de roteador seguem a mesma regra no nível do modelo: uma entrada é
+> adicionada **somente se o modelo responder `chat-200` e puder chamar ferramentas** — um modelo sem suporte a ferramentas,
 > uma chave morta ou um provedor morto é descartado em vez de adicionado. Reexecute a etapa de verificação a qualquer momento;
-> as falhas são reportadas, nunca escondidas.
+> as falhas são relatadas, nunca escondidas.
 
 ## 🧭 Como funciona
 
@@ -140,10 +159,10 @@ inbox (one address per account)                                  a fresh address
 | cadastro | página de registro do painel → Turnstile (resolvido no navegador) → `POST /api/user/register` | o token é de uso único; um novo por registro/sendCode |
 | verificação | `GET /api/verification?email=…` | código de 6 caracteres chega na caixa de entrada; e-mails de marca são filtrados |
 | login | `POST /api/user/login` | senha em texto simples (criptografia desativada); token de sessão em mãos |
-| chave | `POST /api/token/` (+ revelar) | chave retornada uma vez, escrita em disco imediatamente |
+| chave | `POST /api/token/` (+ reveal) | chave retornada uma vez, escrita em disco imediatamente |
 | prova | `POST /v1/chat/completions` | chat-200 com conteúdo = a chave está ativa |
 
-## ⚙️ Opções da CLI
+## ⚙️ Opções do CLI
 
 ```bash
 node src/cli.js --count N        # mint N keys (screen exits, register, verify, chat-gate)
@@ -155,15 +174,15 @@ node src/cli.js --help
 
 | Env | Padrão | Significado |
 | --- | --- | --- |
-| `DUIAPI_PROXIES` | `proxies.txt` | pool de saídas, uma linha por proxy — opcional: sem um pool a CLI se conecta diretamente |
+| `DUIAPI_PROXIES` | `proxies.txt` | pool de saídas, uma linha por proxy — opcional: sem um pool o CLI se conecta diretamente |
 | `DUIAPI_MODEL` | `deepseek-v4.1-flash` | modelo para a verificação ao vivo |
 
 ## 🛰️ Atrás de um proxy
 
-**Opcional — recomendado em escala (limites por IP, banimentos).** A ferramenta também funciona sem proxy.
+**Opcional — recomendado em escala (limites por IP, banimentos).** A ferramenta funciona sem proxy também.
 
-- **Com um pool:** passe `--pool <file>` (ou defina `DUIAPI_PROXIES`) e toda requisição passa por uma saída dessa lista — uma linha morta faz aquela tentativa falhar e a ferramenta segue em frente. O registro é a etapa com perdas (`429` em rajada) — a ferramenta tenta novamente com a próxima saída e controla o ritmo por design.
-- **Sem um pool:** a CLI imprime `running WITHOUT a proxy (direct)` e se conecta diretamente. Nada sobre cadastro, criação de chave ou verificação muda — apenas de onde os pacotes saem.
+- **Com um pool:** passe `--pool <file>` (ou defina `DUIAPI_PROXIES`) e toda requisição passa por uma saída dessa lista — uma linha morta faz aquela tentativa falhar e a ferramenta segue em frente. O registro é a etapa com perdas (`429` sob rajada) — a ferramenta tenta novamente com a próxima saída e controla o ritmo por design.
+- **Sem um pool:** o CLI imprime `running WITHOUT a proxy (direct)` e se conecta diretamente. Nada sobre cadastro, criação de chaves ou verificação muda — apenas de onde os pacotes saem.
 - Execute `--screen` em qualquer um dos modos: ele testa as saídas que você tem (ou a rota direta) contra a DuiAPI antes de uma execução real.
 
 ## 📄 Arquivos
@@ -177,7 +196,7 @@ node src/cli.js --help
 
 ## 🔌 Conectar ao 9Router
 
-[9Router](https://9router.com) é um router auto-hospedado e compatível com OpenAI. A DuiAPI fala OpenAI, então registre uma vez e toda chave se torna uma conexão:
+[9Router](https://9router.com) é um roteador auto-hospedado e compatível com OpenAI. A DuiAPI fala OpenAI, então registre uma vez e toda chave se torna uma conexão:
 
 ```bash
 node src/connect-9router.js --base http://localhost:20128 --password 123456
@@ -187,7 +206,7 @@ Padrões: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model deepse
 
 ## 🔌 Conectar ao OmniRoute
 
-[OmniRoute](https://omniroute.online) é um router auto-hospedado e compatível com OpenAI. A DuiAPI fala OpenAI, então registre uma vez e toda chave se torna uma conexão:
+[OmniRoute](https://omniroute.online) é um roteador auto-hospedado e compatível com OpenAI. A DuiAPI fala OpenAI, então registre uma vez e toda chave se torna uma conexão:
 
 ```bash
 node src/connect-omniroute.js --base http://localhost:20128 --password 123456
@@ -195,19 +214,19 @@ node src/connect-omniroute.js --base http://localhost:20128 --password 123456
 
 Padrões: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model deepseek-v4.1-flash`. Os modelos são servidos como `duiapi/<model id>`.
 
-## 🔑 O que uma chave te dá
+## 🔑 O que uma chave lhe dá
 
 | | |
 | --- | --- |
 | 🏢 Provedor | **DuiAPI** — [duiapi.com](https://duiapi.com) |
 | 🎁 O que o provedor dá | 1.000.000 de cota inicial por conta |
-| 🔑 O que uma chave te dá | uma chave limitada à sua própria conta: os 17 ids do catálogo em `https://duiapi.com/v1`, na cota da sua conta |
+| 🔑 O que uma chave lhe dá | uma chave vinculada à sua própria conta: os 17 ids do catálogo em `https://duiapi.com/v1`, na cota da sua conta |
 | 🌐 Formato da API | compatível com OpenAI: `POST https://duiapi.com/v1/chat/completions` |
-| 🔒 Seus dados | apenas `duiapi.com` e seu backend de caixa de entrada são contatados |
+| 🔒 Seus dados | apenas `duiapi.com` e o backend da sua caixa de entrada são contatados |
 
 ## 🐞 Problemas
 
-Se a DuiAPI mudar o formato do registro, a sitekey do Turnstile ou o passo de cota, a ferramenta para ali e avisa. **[Abra uma issue](../../issues)** com o comando e a saída exata.
+Se a DuiAPI mudar o formato de registro, a sitekey do Turnstile ou a etapa de cota, a ferramenta para ali e avisa. **[Abra uma issue](../../issues)** com o comando e a saída exata.
 
 ## 📄 Licença
 

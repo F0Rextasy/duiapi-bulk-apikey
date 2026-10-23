@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Démarrage rapide](#-quick-start) · [🎁 Offre gratuite](#-free-tier--how-much-you-get) · [🤖 Modèles](#-models--all-17-of-them) · [🧪 Utiliser l'API](#-how-to-use-the-api) · [✅ Vérifié](#-verified-working--every-key-is-tested) · [🧭 Fonctionnement](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Options](#️-cli-options) · [🛰️ Proxys](#️-behind-a-proxy) · [🐞 Problèmes](#-issues)
+[🛠 Démarrage rapide](#-quick-start) · [🎁 Niveau gratuit](#-free-tier--how-much-you-get) · [🤖 Modèles](#-models--all-17-of-them) · [🧪 Utiliser l'API](#-how-to-use-the-api) · [✅ Vérifié](#-verified-working--every-key-is-tested) · [🧭 Comment ça marche](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Options](#️-cli-options) · [🛰️ Proxys](#️-behind-a-proxy) · [🐞 Problèmes](#-issues)
 
 </div>
 
@@ -37,7 +37,7 @@
 
 DuiAPI est un panneau de la famille New API : inscription par e-mail + mot de passe derrière un Cloudflare Turnstile, et **1 000 000 de quota de départ sur chaque nouveau compte** (`quota_per_unit` 500 000 ; le solde du premier compte affiche 1 000 000). Le catalogue contient **17 identifiants de modèles** répartis dans des groupes à tarif réduit (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`), et le modèle par défaut vérifié par chat est `deepseek-v4.1-flash`. Le quota est rattaché au compte — c'est pourquoi cet outil crée **un compte par clé**.
 
-## 🎁 Offre gratuite — ce que vous obtenez
+## 🎁 Niveau gratuit — ce que vous obtenez
 
 **Chaque nouveau compte DuiAPI démarre avec 1 000 000 d'unités de quota.**
 
@@ -45,12 +45,12 @@ DuiAPI est un panneau de la famille New API : inscription par e-mail + mot de pa
 | --- | --- |
 | Quota de départ | **1 000 000** par compte (mesuré sur un compte neuf, `quotaStart`) |
 | Inscription | e-mail + mot de passe + Cloudflare Turnstile |
-| Vérification e-mail | code à 6 caractères depuis la boîte de réception (aller-retour mesuré à 18 s) |
-| Catalogue de modèles | **17 identifiants** (tarification du panneau) ; modèles texte gratuits à ratio zéro : aucun — le quota constitue l'offre gratuite |
-| Limites de débit | l'endpoint d'inscription a répondu `429` en rafale (24 tentatives : clés, 4× register-429, 5× codes mail manqués) — cadencez l'exécution, les nouvelles tentatives sont sûres |
+| Vérification e-mail | code de 6 caractères reçu dans la boîte de réception (aller-retour mesuré à 18 s) |
+| Catalogue de modèles | **17 identifiants** (tarification du panneau) ; modèles texte gratuits à ratio zéro : aucun — le quota constitue le niveau gratuit |
+| Limites de débit | l'endpoint d'inscription a répondu `429` en cas de rafale (24 tentatives : clés, 4× inscription-429, 5× codes e-mail manqués) — rythmez l'exécution, les nouvelles tentatives sont sûres |
 | L'unité qui évolue | **un compte = une clé** (le quota est par compte) |
 
-> 💡 L'offre gratuite est définie par DuiAPI et peut changer. Consultez les chiffres en direct sur [duiapi.com](https://duiapi.com) — et laissez le contrôle de l'outil décider :
+> 💡 Le niveau gratuit est défini par DuiAPI et peut changer. Consultez les chiffres en direct sur [duiapi.com](https://duiapi.com) — et laissez le contrôle de l'outil décider :
 
 ```bash
 node src/cli.js --verify-only     # every key in keys.txt is re-tested with a real chat call
@@ -60,9 +60,9 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 `GET /v1/models` sert le catalogue du panneau — **17 identifiants** (groupes à tarif réduit deepseek / glm / qwen / kimi). Le modèle par défaut vérifié par chat :
 
-| ID du modèle | Remarque |
+| Identifiant du modèle | Remarque |
 | --- | --- |
-| `deepseek-v4.1-flash` | le modèle de vérification par défaut (groupe `default`, ratio 0,5) — chat-200 avec du contenu réel, delta de quota ~180 unités par petit appel |
+| `deepseek-v4.1-flash` | le modèle par défaut de vérification (groupe `default`, ratio 0.5) — chat-200 avec du contenu réel, delta de quota ~180 unités par petit appel |
 
 ```bash
 curl https://duiapi.com/v1/chat/completions \
@@ -81,7 +81,7 @@ print(c.chat.completions.create(model="deepseek-v4.1-flash",
       messages=[{"role":"user","content":"hi"}]).choices[0].message.content)
 ```
 
-Vérification du solde (ce sur quoi l'outil se base) : `GET /api/user/self` avec le jeton du compte, ou un appel chat de 1 jeton.
+Vérification du solde (ce sur quoi l'outil filtre) : `GET /api/user/self` avec le jeton du compte, ou un appel chat de 1 token.
 
 ## 🛠 Démarrage rapide
 
@@ -95,22 +95,41 @@ node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
-DuiAPI garde ses appels register/sendCode/login derrière un Cloudflare Turnstile, donc un jeton frais est consommé par appel (trois par compte) : résolvez le widget sur <https://duiapi.com> dans n'importe quel navigateur et collez les valeurs `cf-turnstile-response`, ou pointez `--token-cmd` vers un solveur qui affiche un jeton sur stdout. `keys.txt` n'est écrit **qu'**après une complétion de chat en direct ; `accounts.json` conserve le nom d'utilisateur / l'e-mail / l'id de clé.
+DuiAPI garde ses appels register/sendCode/login derrière un Cloudflare Turnstile, donc un jeton frais est consommé par appel (trois par compte) : résolvez le widget sur <https://duiapi.com> dans n'importe quel navigateur et collez les valeurs `cf-turnstile-response`, ou pointez `--token-cmd` vers un solveur qui affiche un jeton sur stdout. `keys.txt` n'est écrit **qu'**après une complétion de chat en direct ; `accounts.json` conserve le nom d'utilisateur / l'e-mail / l'identifiant de clé.
 
 ### 🖱️ Le lanceur
 
-Le lanceur demande la liste de proxys (facultative — sans elle, le CLI s'exécute en direct) et le nombre, les mémorise, et exécute le CLI — mint, verify, screen exits, settings, help, Connect to 9Router.
+Le lanceur demande la liste de proxys (facultative — sans elle, le CLI se connecte directement) et le nombre, les mémorise, puis exécute le CLI — création, vérification, test des sorties, paramètres, aide, Connexion à 9Router.
+
+## 🚀 Une seule commande
+
+Le captcha est résolu pour vous — une seule commande crée N comptes et ne conserve que les clés vérifiées par un appel chat en direct :
+
+```bash
+npm install                  # once: pulls puppeteer-core
+npm start                    # menu → "1) Mint keys" → "How many keys?" (Enter = 10)
+# or non-interactive:
+node src/cli.js --count N
+```
+
+`--auto` est la valeur par défaut et rien ne doit être passé : le `src/solver.js` intégré ouvre un Chrome avec interface via la propre sortie du compte et renvoie automatiquement le jeton Turnstile du panneau. `--dry` affiche le plan résolu et se termine avec **aucun fichier écrit et aucun appel réseau**.
+
+> ⚠️ **Conditions et risque lié au compte.** Cet outil est un outil d'automatisation, pas un vendeur de comptes. Les inscriptions en masse et la création de clés relèvent entièrement de votre responsabilité : elles peuvent enfreindre les Conditions d'utilisation du fournisseur et entraîner le blocage d'adresses, de sorties ou de comptes. Utilisez-le uniquement sur une infrastructure que vous êtes autorisé à automatiser, et gardez un faible débit de requêtes.
+
+## 🔧 Avancé (facultatif)
+
+La configuration de votre propre solveur, le collage manuel d'un jeton ou le pointage de l'outil vers un Chrome spécifique sont documentés dans **[ADVANCED.md](ADVANCED.md)**. Le parcours courant n'en a pas besoin.
 
 ## ✅ Vérifié et fonctionnel — chaque clé est testée
 
 | Vérification | Résultat |
 | --- | --- |
-| `GET /api/status` | **200**, register+e-mail verification+turnstile tous à true, sitekey présent |
+| `GET /api/status` | **200**, inscription + vérification e-mail + turnstile tous à true, sitekey présent |
 | `POST /api/user/register` (jeton Turnstile) | **200** `{"message":"","success":true}` |
-| `GET /api/verification` | **200** + code à 6 caractères depuis la boîte de réception (`DuiAPI email verification`) |
+| `GET /api/verification` | **200** + code de 6 caractères reçu dans la boîte de réception (`DuiAPI email verification`) |
 | `POST /api/user/login` | **200** · `quota 1000000` |
 | `POST /v1/chat/completions` (`deepseek-v4.1-flash`) — pour **chaque** clé avant son écriture | **200** avec un vrai `choices[0].message.content` et un delta de quota |
-| une clé qui échoue à sa vérification de chat | jamais écrite — le compte reste dans `accounts.json` |
+| une clé qui échoue à sa vérification chat | jamais écrite — le compte reste dans `accounts.json` |
 
 ```bash
 node src/cli.js --verify-only
@@ -123,7 +142,7 @@ node src/cli.js --screen
 > une clé morte ou un fournisseur mort est écarté au lieu d'être ajouté. Relancez l'étape de vérification à tout moment ;
 > les échecs sont signalés, jamais masqués.
 
-## 🧭 Fonctionnement
+## 🧭 Comment ça marche
 
 ```
 inbox (one address per account)                                  a fresh address per account
@@ -136,11 +155,11 @@ inbox (one address per account)                                  a fresh address
 
 | Étape | Appel | Remarques |
 | --- | --- | --- |
-| status | `GET /api/status` | contrôles : register activé, vérification e-mail activée, turnstile activé (sitekey servi par le panneau) |
-| inscription | page register du panneau → Turnstile (résolu dans le navigateur) → `POST /api/user/register` | le jeton est à usage unique ; un nouveau par register/sendCode |
-| vérification | `GET /api/verification?email=…` | le code à 6 caractères arrive dans la boîte de réception ; les mails de marque sont filtrés |
+| status | `GET /api/status` | contrôles : inscription activée, vérification e-mail activée, turnstile activé (sitekey fournie par le panneau) |
+| inscription | page d'inscription du panneau → Turnstile (résolu dans le navigateur) → `POST /api/user/register` | le jeton est à usage unique ; un nouveau jeton par register/sendCode |
+| vérification | `GET /api/verification?email=…` | le code de 6 caractères arrive dans la boîte de réception ; les e-mails de marque sont filtrés |
 | connexion | `POST /api/user/login` | mot de passe en clair (chiffrement désactivé) ; jeton de session en main |
-| clé | `POST /api/token/` (+ reveal) | clé renvoyée une fois, écrite immédiatement sur disque |
+| clé | `POST /api/token/` (+ révélation) | la clé est renvoyée une fois, écrite immédiatement sur le disque |
 | preuve | `POST /v1/chat/completions` | chat-200 avec contenu = la clé est active |
 
 ## ⚙️ Options du CLI
@@ -162,8 +181,8 @@ node src/cli.js --help
 
 **Facultatif — recommandé à grande échelle (limites par IP, bannissements).** L'outil fonctionne aussi sans proxy.
 
-- **Avec un pool :** passez `--pool <file>` (ou définissez `DUIAPI_PROXIES`) et chaque requête passe par une sortie de cette liste — une ligne morte fait échouer cette tentative et l'outil passe à la suivante. L'inscription est l'étape la plus fragile (`429` en rafale) — l'outil réessaie avec la sortie suivante et cadence par conception.
-- **Sans pool :** le CLI affiche `running WITHOUT a proxy (direct)` et se connecte directement. Rien ne change pour l'inscription, la création de clés ou la vérification — seul le point de départ des paquets change.
+- **Avec un pool :** passez `--pool <file>` (ou définissez `DUIAPI_PROXIES`) et chaque requête passe par une sortie de cette liste — une ligne morte fait échouer cette tentative et l'outil passe à la suivante. L'inscription est l'étape la plus fragile (`429` en cas de rafale) — l'outil réessaie avec la sortie suivante et rythme par conception.
+- **Sans pool :** le CLI affiche `running WITHOUT a proxy (direct)` et se connecte directement. Rien ne change concernant l'inscription, la création de clés ou la vérification — seul le point de départ des paquets change.
 - Lancez `--screen` dans l'un ou l'autre mode : il teste les sorties dont vous disposez (ou la route directe) contre DuiAPI avant une exécution réelle.
 
 ## 📄 Fichiers
@@ -171,7 +190,7 @@ node src/cli.js --help
 | Chemin | Contenu |
 | --- | --- |
 | `keys.txt` | une clé vérifiée en direct par ligne — ignoré par git |
-| `accounts.json` | nom d'utilisateur / e-mail / id de clé — données de récupération |
+| `accounts.json` | nom d'utilisateur / e-mail / identifiant de clé — données de récupération |
 | `proxies.txt` | vos sorties — ignoré par git |
 | `outputs/` | journaux d'exécution — ignorés par git |
 
@@ -207,7 +226,7 @@ Valeurs par défaut : `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--
 
 ## 🐞 Problèmes
 
-Si DuiAPI modifie la structure d'inscription, la sitekey Turnstile ou le palier de quota, l'outil s'arrête là et le signale. **[Ouvrez un ticket](../../issues)** avec la commande et la sortie exacte.
+Si DuiAPI modifie la forme de l'inscription, la sitekey Turnstile ou l'étape de quota, l'outil s'arrête là et le signale. **[Ouvrez un ticket](../../issues)** avec la commande et la sortie exacte.
 
 ## 📄 Licence
 

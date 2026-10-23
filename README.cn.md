@@ -35,22 +35,22 @@
 
 ## ✨ 为什么会有这个项目
 
-DuiAPI 是一个 New API 系列面板：在 Cloudflare Turnstile 之后进行邮箱 + 密码注册，并且**每个新账户都有 1,000,000 的初始额度**（`quota_per_unit` 为 500,000；第一个账户的余额显示为 1,000,000）。目录中包含跨折扣分组（`default`、`deepseek-sale`、`glm-sale`、`qwen-sale`、`kimi-discount`）的 **17 个模型 id**，经聊天验证的默认模型是 `deepseek-v4.1-flash`。额度存在于账户上——这就是为什么这个工具**每个密钥创建一个账户**。
+DuiAPI 是一个 New API 系列面板：在 Cloudflare Turnstile 之后进行邮箱 + 密码注册，并且**每个新账户都有 1,000,000 的初始额度**（`quota_per_unit` 为 500,000；第一个账户的余额显示为 1,000,000）。目录中包含跨折扣分组（`default`、`deepseek-sale`、`glm-sale`、`qwen-sale`、`kimi-discount`）的 **17 个模型 id**，经聊天验证的默认模型是 `deepseek-v4.1-flash`。额度存在于账户上——这就是为什么本工具**每个密钥创建一个账户**。
 
 ## 🎁 免费额度 — 你能获得多少
 
-**每个新的 DuiAPI 账户都以 1,000,000 额度单位开始。**
+**每个新的 DuiAPI 账户初始都有 1,000,000 额度单位。**
 
 | 项目 | 值 |
 | --- | --- |
-| 初始额度 | 每个账户 **1,000,000**（在新账户上测得，`quotaStart`） |
+| 初始额度 | 每个账户 **1,000,000**（在全新账户上测得，`quotaStart`） |
 | 注册 | 邮箱 + 密码 + Cloudflare Turnstile |
 | 邮箱验证 | 收件箱中的 6 位字符验证码（实测往返 18 秒） |
-| 模型目录 | **17 个 id**（面板定价）；零比率免费文本模型：无——额度就是免费层 |
-| 速率限制 | 注册端点在突发下返回 `429`（24 次尝试：密钥、4× 注册 429、5× 邮件验证码未命中）——控制运行节奏，重试是安全的 |
+| 模型目录 | **17 个 id**（面板定价）；零倍率免费文本模型：无——额度就是免费层 |
+| 速率限制 | 注册端点在突发请求下返回 `429`（24 次尝试：密钥、4× 注册-429、5× 邮件验证码未命中）——控制运行节奏，重试是安全的 |
 | 可扩展的单位 | **一个账户 = 一个密钥**（额度按账户计算） |
 
-> 💡 免费层由 DuiAPI 设定，可能会变化。在 [duiapi.com](https://duiapi.com) 查看实时数字——并让工具自身的门控来决定：
+> 💡 免费层由 DuiAPI 设定，可能会变化。请在 [duiapi.com](https://duiapi.com) 查看实时数字——并让工具自身的关卡来做判断：
 
 ```bash
 node src/cli.js --verify-only     # every key in keys.txt is re-tested with a real chat call
@@ -62,7 +62,7 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 | 模型 ID | 说明 |
 | --- | --- |
-| `deepseek-v4.1-flash` | 验证默认模型（`default` 分组，比率 0.5）——返回真实内容的 chat-200，每次小调用额度变化约 180 单位 |
+| `deepseek-v4.1-flash` | 验证默认模型（`default` 分组，倍率 0.5）——返回真实内容的 chat-200，每次小调用额度变化约 180 单位 |
 
 ```bash
 curl https://duiapi.com/v1/chat/completions \
@@ -72,7 +72,7 @@ curl https://duiapi.com/v1/chat/completions \
 
 ## 🧪 如何使用 API
 
-基础 URL **`https://duiapi.com/v1`** —— 兼容 OpenAI。
+基础 URL **`https://duiapi.com/v1`** — 兼容 OpenAI。
 
 ```python
 from openai import OpenAI
@@ -81,7 +81,7 @@ print(c.chat.completions.create(model="deepseek-v4.1-flash",
       messages=[{"role":"user","content":"hi"}]).choices[0].message.content)
 ```
 
-余额检查（工具的门控依据）：使用账户令牌调用 `GET /api/user/self`，或进行一次 1-token 的聊天调用。
+余额检查（工具把关所依据的）：使用账户令牌调用 `GET /api/user/self`，或进行一次 1 token 的聊天调用。
 
 ## 🛠 快速开始
 
@@ -95,19 +95,38 @@ node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
-DuiAPI 将其 register/sendCode/login 调用置于 Cloudflare Turnstile 之后，因此每次调用消耗一个全新的令牌（每个账户三个）：在任意浏览器中于 <https://duiapi.com> 上解决该组件并粘贴 `cf-turnstile-response` 值，或将 `--token-cmd` 指向一个在 stdout 上打印令牌的求解器。`keys.txt` **仅**在实时聊天补全之后写入；`accounts.json` 保留用户名 / 邮箱 / 密钥 id。
+DuiAPI 将其 register/sendCode/login 调用置于 Cloudflare Turnstile 之后，因此每次调用消耗一个全新的令牌（每个账户三个）：在任意浏览器中于 <https://duiapi.com> 上解决该组件并粘贴 `cf-turnstile-response` 值，或将 `--token-cmd` 指向一个在 stdout 上打印令牌的求解器。`keys.txt` **仅**在一次实时聊天补全之后写入；`accounts.json` 保存用户名 / 邮箱 / 密钥 id。
 
 ### 🖱️ 启动器
 
-启动器会询问代理列表（可选——没有代理时 CLI 直接运行）和数量，记住它们，并运行 CLI——铸造、验证、筛选退出、设置、帮助、连接到 9Router。
+启动器会询问代理列表（可选——没有代理时 CLI 直接运行）和数量，记住它们，并运行 CLI——铸造、验证、检测出口、设置、帮助、连接到 9Router。
+
+## 🚀 一条命令
+
+验证码已为你解决——一条命令铸造 N 个账户，并只保留经实时聊天调用验证过的密钥：
+
+```bash
+npm install                  # once: pulls puppeteer-core
+npm start                    # menu → "1) Mint keys" → "How many keys?" (Enter = 10)
+# or non-interactive:
+node src/cli.js --count N
+```
+
+`--auto` 是默认值，无需传入任何参数：内嵌的 `src/solver.js` 会在账户自身的出口上打开一个有界面的 Chrome，并自动返回面板的 Turnstile 令牌。`--dry` 打印解析后的计划并以**不写文件、不进行网络调用**的方式退出。
+
+> ⚠️ **条款与账户风险。** 这是一个自动化工具，不是账户供应商。批量注册和密钥铸造完全由你负责：它们可能违反提供商的服务条款，并可能导致地址、出口或账户被封禁。仅在你被允许自动化的基础设施上使用它，并保持较低的请求速率。
+
+## 🔧 高级（可选）
+
+接入你自己的求解器、手动粘贴令牌或将工具指向特定的 Chrome，均记录在 **[ADVANCED.md](ADVANCED.md)** 中。常见路径无需其中任何一项。
 
 ## ✅ 已验证可用 — 每个密钥都经过测试
 
 | 检查 | 结果 |
 | --- | --- |
-| `GET /api/status` | **200**，register+邮箱验证+turnstile 全部为 true，sitekey 存在 |
+| `GET /api/status` | **200**，register+邮箱验证+turnstile 均为 true，sitekey 存在 |
 | `POST /api/user/register`（Turnstile 令牌） | **200** `{"message":"","success":true}` |
-| `GET /api/verification` | **200** + 收件箱中的 6 位字符验证码（`DuiAPI email verification`） |
+| `GET /api/verification` | **200** + 来自收件箱的 6 位字符验证码（`DuiAPI email verification`） |
 | `POST /api/user/login` | **200** · `quota 1000000` |
 | `POST /v1/chat/completions`（`deepseek-v4.1-flash`）——对**每个**密钥在写入之前 | **200**，带有真实的 `choices[0].message.content` 和额度变化 |
 | 未通过聊天检查的密钥 | 从不写入——账户保留在 `accounts.json` 中 |
@@ -117,10 +136,10 @@ node src/cli.js --verify-only
 node src/cli.js --screen
 ```
 
-> **质量门控。** 这里的每个密钥在写入 `keys.txt` 之前都通过了实时 `chat-200`
-> （绝不提供失效密钥）。路由器组合在模型层面遵循同样的规则：仅当模型
-> 返回 `chat-200` 且能调用工具时才会添加条目——不支持工具的模型、
-> 失效的密钥或失效的提供商会直接被丢弃而不是添加。随时重新运行验证步骤；
+> **质量关卡。** 这里的每个密钥在被写入 `keys.txt` 之前都通过了实时 `chat-200`
+> （失效密钥从不发布）。路由器组合在模型层面遵循同样的规则：一个条目
+> **仅当模型返回 `chat-200` 且能调用工具时**才会被添加——不支持工具的模型、
+> 失效的密钥或失效的提供商会直接被丢弃而非添加。可随时重新运行验证步骤；
 > 失败会被报告，绝不隐藏。
 
 ## 🧭 工作原理
@@ -136,10 +155,10 @@ inbox (one address per account)                                  a fresh address
 
 | 步骤 | 调用 | 说明 |
 | --- | --- | --- |
-| status | `GET /api/status` | 门控：register 开启、邮箱验证开启、turnstile 开启（sitekey 由面板提供） |
-| signup | 面板注册页面 → Turnstile（在浏览器中解决）→ `POST /api/user/register` | 令牌一次性使用；每次 register/sendCode 都需要一个全新的 |
+| status | `GET /api/status` | 关卡：register 开启、邮箱验证开启、turnstile 开启（sitekey 由面板提供） |
+| signup | 面板注册页 → Turnstile（在浏览器中解决）→ `POST /api/user/register` | 令牌一次性使用；每次 register/sendCode 使用全新令牌 |
 | verify | `GET /api/verification?email=…` | 6 位字符验证码到达收件箱；品牌邮件被过滤掉 |
-| login | `POST /api/user/login` | 明文密码（加密关闭）；获得会话令牌 |
+| login | `POST /api/user/login` | 明文密码（加密关闭）；会话令牌在手 |
 | key | `POST /api/token/`（+ 显示） | 密钥仅返回一次，立即写入磁盘 |
 | proof | `POST /v1/chat/completions` | 带内容的 chat-200 = 密钥可用 |
 
@@ -160,17 +179,17 @@ node src/cli.js --help
 
 ## 🛰️ 在代理之后
 
-**可选——在规模化时推荐（按 IP 限制、封禁）。** 该工具在没有代理时也能工作。
+**可选——大规模使用时推荐（按 IP 限制、封禁）。** 该工具在没有代理时也能工作。
 
-- **有池时：** 传入 `--pool <file>`（或设置 `DUIAPI_PROXIES`），每个请求都通过该列表中的一个出口——失效线路会使该次尝试失败，工具继续前进。注册是有损步骤（突发下 `429`）——工具会用下一个出口重试并按设计控制节奏。
-- **无池时：** CLI 打印 `running WITHOUT a proxy (direct)` 并直接连接。注册、密钥铸造或验证没有任何变化——只是数据包离开的位置不同。
-- 对任一模式运行 `--screen`：在真实运行之前，它会针对 DuiAPI 测试你拥有的出口（或直接路由）。
+- **有池时：** 传入 `--pool <file>`（或设置 `DUIAPI_PROXIES`），每个请求都通过该列表中的一个出口——失效线路会使该次尝试失败，工具继续前进。注册是有损步骤（突发时 `429`）——工具会用下一个出口重试并按设计控制节奏。
+- **没有池时：** CLI 打印 `running WITHOUT a proxy (direct)` 并直接连接。注册、密钥铸造或验证没有任何变化——只是数据包发出的位置不同。
+- 对任一模式运行 `--screen`：它会在真实运行之前针对 DuiAPI 测试你拥有的出口（或直接路由）。
 
 ## 📄 文件
 
 | 路径 | 内容 |
 | --- | --- |
-| `keys.txt` | 每行一个实时验证的密钥——已被 git 忽略 |
+| `keys.txt` | 每行一个经实时验证的密钥——已被 git 忽略 |
 | `accounts.json` | 用户名 / 邮箱 / 密钥 id——恢复数据 |
 | `proxies.txt` | 你的出口——已被 git 忽略 |
 | `outputs/` | 运行日志——已被 git 忽略 |
@@ -201,17 +220,17 @@ node src/connect-omniroute.js --base http://localhost:20128 --password 123456
 | --- | --- |
 | 🏢 提供商 | **DuiAPI** — [duiapi.com](https://duiapi.com) |
 | 🎁 提供商提供什么 | 每个账户 1,000,000 初始额度 |
-| 🔑 一个密钥能给你什么 | 一个限定于其自身账户的密钥：在 `https://duiapi.com/v1` 上使用 17 个目录 id，按你账户的额度计费 |
+| 🔑 一个密钥能给你什么 | 一个密钥限定于其自身账户：在 `https://duiapi.com/v1` 上使用 17 个目录 id，按你账户的额度计费 |
 | 🌐 API 形态 | 兼容 OpenAI：`POST https://duiapi.com/v1/chat/completions` |
 | 🔒 你的数据 | 仅联系 `duiapi.com` 和你的收件箱后端 |
 
 ## 🐞 问题反馈
 
-如果 DuiAPI 更改了注册形态、Turnstile sitekey 或额度步骤，工具会停在那里并说明原因。**[提交 issue](../../issues)**，附上命令和确切的输出。
+如果 DuiAPI 更改了注册形态、Turnstile sitekey 或额度步骤，工具会在此停止并说明原因。请附上命令和确切输出**[提交 issue](../../issues)**。
 
 ## 📄 许可证
 
-MIT © 2026 — 见 [LICENSE](LICENSE)。
+MIT © 2026 — 参见 [LICENSE](LICENSE)。
 
 <div align="center">
 

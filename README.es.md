@@ -35,7 +35,7 @@
 
 ## ✨ Por qué existe esto
 
-DuiAPI es un panel de la familia New API: registro con correo electrónico + contraseña detrás de un Cloudflare Turnstile, y **1.000.000 de cuota inicial en cada cuenta nueva** (`quota_per_unit` 500.000; el saldo de la primera cuenta marca 1.000.000). El catálogo incluye **17 ids de modelo** repartidos en grupos de descuento (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`), y el predeterminado verificado por chat es `deepseek-v4.1-flash`. La cuota vive en la cuenta — por eso esta herramienta crea **una cuenta por clave**.
+DuiAPI es un panel de la familia New API: registro con correo electrónico + contraseña detrás de un Cloudflare Turnstile, y **1.000.000 de cuota inicial en cada cuenta nueva** (`quota_per_unit` 500.000; el saldo de la primera cuenta marca 1.000.000). El catálogo incluye **17 ids de modelos** repartidos en grupos de descuento (`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`), y el predeterminado verificado por chat es `deepseek-v4.1-flash`. La cuota vive en la cuenta — por eso esta herramienta crea **una cuenta por clave**.
 
 ## 🎁 Nivel gratuito — cuánto obtienes
 
@@ -46,7 +46,7 @@ DuiAPI es un panel de la familia New API: registro con correo electrónico + con
 | Cuota inicial | **1.000.000** por cuenta (medida en una cuenta nueva, `quotaStart`) |
 | Registro | correo electrónico + contraseña + Cloudflare Turnstile |
 | Verificación por correo | código de 6 caracteres desde la bandeja de entrada (18 s de ida y vuelta medidos) |
-| Catálogo de modelos | **17 ids** (precios del panel); modelos de texto gratuitos con ratio cero: ninguno — la cuota es el nivel gratuito |
+| Catálogo de modelos | **17 ids** (precios del panel); modelos de texto gratuito con ratio cero: ninguno — la cuota es el nivel gratuito |
 | Límites de velocidad | el endpoint de registro respondió `429` bajo ráfagas (24 intentos: claves, 4× registro-429, 5× fallos de código de correo) — modera el ritmo, los reintentos son seguros |
 | La unidad que escala | **una cuenta = una clave** (la cuota es por cuenta) |
 
@@ -60,7 +60,7 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 `GET /v1/models` sirve el catálogo del panel — **17 ids** (grupos de descuento deepseek / glm / qwen / kimi). El predeterminado verificado por chat:
 
-| ID de modelo | Nota |
+| ID del modelo | Nota |
 | --- | --- |
 | `deepseek-v4.1-flash` | el predeterminado de verificación (grupo `default`, ratio 0.5) — chat-200 con contenido real, delta de cuota ~180 unidades por llamada pequeña |
 
@@ -81,7 +81,7 @@ print(c.chat.completions.create(model="deepseek-v4.1-flash",
       messages=[{"role":"user","content":"hi"}]).choices[0].message.content)
 ```
 
-Consulta de saldo (lo que la herramienta verifica): `GET /api/user/self` con el token de la cuenta, o una llamada de chat de 1 token.
+Consulta de saldo (lo que la herramienta usa como puerta): `GET /api/user/self` con el token de la cuenta, o una llamada de chat de 1 token.
 
 ## 🛠 Inicio rápido
 
@@ -95,18 +95,37 @@ node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
 # or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
-DuiAPI mantiene sus llamadas de registro/envío de código/inicio de sesión detrás de un Cloudflare Turnstile, por lo que se consume un token nuevo por llamada (tres por cuenta): resuelve el widget en <https://duiapi.com> en cualquier navegador y pega los valores de `cf-turnstile-response`, o apunta `--token-cmd` a un solucionador que imprima un token en stdout. `keys.txt` se escribe **solo** tras una finalización de chat en vivo; `accounts.json` conserva el nombre de usuario / correo electrónico / id de clave.
+DuiAPI mantiene sus llamadas de registro/sendCode/login detrás de un Cloudflare Turnstile, así que se consume un token nuevo por llamada (tres por cuenta): resuelve el widget en <https://duiapi.com> en cualquier navegador y pega los valores de `cf-turnstile-response`, o apunta `--token-cmd` a un solucionador que imprima un token en stdout. `keys.txt` se escribe **solo** después de una finalización de chat en vivo; `accounts.json` guarda el nombre de usuario / correo electrónico / id de clave.
 
 ### 🖱️ El lanzador
 
-El lanzador pide la lista de proxies (opcional — sin una, el CLI se ejecuta directo) y la cantidad, las recuerda y ejecuta el CLI — crear, verificar, probar salidas, ajustes, ayuda, Conectar a 9Router.
+El lanzador pide la lista de proxies (opcional — sin una, el CLI se ejecuta directo) y la cantidad, las recuerda y ejecuta el CLI — mint, verify, screen exits, settings, help, Connect to 9Router.
+
+## 🚀 Un solo comando
+
+El captcha se resuelve por ti — un solo comando crea N cuentas y conserva solo las claves que una llamada de chat en vivo verificó:
+
+```bash
+npm install                  # once: pulls puppeteer-core
+npm start                    # menu → "1) Mint keys" → "How many keys?" (Enter = 10)
+# or non-interactive:
+node src/cli.js --count N
+```
+
+`--auto` es el predeterminado y no hay que pasar nada: el `src/solver.js` integrado abre un Chrome con interfaz sobre la propia salida de la cuenta y devuelve automáticamente el token Turnstile del panel. `--dry` imprime el plan resuelto y sale **sin escribir ningún archivo y sin ninguna llamada de red**.
+
+> ⚠️ **Términos y riesgo de cuenta.** Esta es una herramienta de automatización, no un vendedor de cuentas. Los registros masivos y la creación de claves son enteramente tu responsabilidad: pueden infringir los Términos de Servicio del proveedor y pueden provocar el bloqueo de direcciones, salidas o cuentas. Úsala solo en infraestructura que tengas permitido automatizar y mantén baja la tasa de solicitudes.
+
+## 🔧 Avanzado (opcional)
+
+Conectar tu propio solucionador, pegar un token a mano o apuntar la herramienta a un Chrome específico está documentado en **[ADVANCED.md](ADVANCED.md)**. La ruta común no necesita nada de esto.
 
 ## ✅ Verificado y funcionando — cada clave se prueba
 
 | Comprobación | Resultado |
 | --- | --- |
-| `GET /api/status` | **200**, registro + verificación por correo + turnstile todos en true, sitekey presente |
-| `POST /api/user/register` (token de Turnstile) | **200** `{"message":"","success":true}` |
+| `GET /api/status` | **200**, registro+verificación por correo+turnstile todos true, sitekey presente |
+| `POST /api/user/register` (token Turnstile) | **200** `{"message":"","success":true}` |
 | `GET /api/verification` | **200** + código de 6 caracteres desde la bandeja de entrada (`DuiAPI email verification`) |
 | `POST /api/user/login` | **200** · `quota 1000000` |
 | `POST /v1/chat/completions` (`deepseek-v4.1-flash`) — para **cada** clave antes de escribirse | **200** con `choices[0].message.content` real y un delta de cuota |
@@ -136,11 +155,11 @@ inbox (one address per account)                                  a fresh address
 
 | Paso | Llamada | Notas |
 | --- | --- | --- |
-| estado | `GET /api/status` | puertas: registro activado, verificación por correo activada, turnstile activado (sitekey servida por el panel) |
-| registro | página de registro del panel → Turnstile (resuelto en el navegador) → `POST /api/user/register` | el token es de un solo uso; uno nuevo por registro/envío de código |
-| verificación | `GET /api/verification?email=…` | llega un código de 6 caracteres a la bandeja de entrada; el correo de marca se filtra |
-| inicio de sesión | `POST /api/user/login` | contraseña en texto plano (cifrado desactivado); token de sesión en mano |
-| clave | `POST /api/token/` (+ revelar) | la clave se devuelve una vez, se escribe en disco inmediatamente |
+| status | `GET /api/status` | puertas: registro activado, verificación por correo activada, turnstile activado (sitekey servida por el panel) |
+| registro | página de registro del panel → Turnstile (resuelto en el navegador) → `POST /api/user/register` | el token es de un solo uso; uno nuevo por cada register/sendCode |
+| verificación | `GET /api/verification?email=…` | el código de 6 caracteres llega a la bandeja de entrada; el correo de marca se filtra |
+| login | `POST /api/user/login` | contraseña en texto plano (cifrado desactivado); token de sesión en mano |
+| clave | `POST /api/token/` (+ reveal) | la clave se devuelve una vez, se escribe en disco inmediatamente |
 | prueba | `POST /v1/chat/completions` | chat-200 con contenido = la clave está viva |
 
 ## ⚙️ Opciones del CLI
@@ -153,7 +172,7 @@ node src/cli.js --connect-9router
 node src/cli.js --help
 ```
 
-| Variable de entorno | Predeterminado | Significado |
+| Env | Predeterminado | Significado |
 | --- | --- | --- |
 | `DUIAPI_PROXIES` | `proxies.txt` | grupo de salidas, una línea por proxy — opcional: sin un grupo, el CLI se conecta directamente |
 | `DUIAPI_MODEL` | `deepseek-v4.1-flash` | modelo para la verificación en vivo |
@@ -162,9 +181,9 @@ node src/cli.js --help
 
 **Opcional — recomendado a escala (límites por IP, bloqueos).** La herramienta también funciona sin proxy.
 
-- **Con un grupo:** pasa `--pool <file>` (o define `DUIAPI_PROXIES`) y cada solicitud pasa por una salida de esa lista — una línea muerta hace fallar ese intento y la herramienta continúa. El registro es el paso con pérdidas (`429` bajo ráfaga) — la herramienta reintenta con la siguiente salida y regula el ritmo por diseño.
+- **Con un grupo:** pasa `--pool <file>` (o define `DUIAPI_PROXIES`) y cada solicitud pasa por una salida de esa lista — una línea muerta hace fallar ese intento y la herramienta continúa. El registro es el paso con pérdidas (`429` bajo ráfaga) — la herramienta reintenta con la siguiente salida y modera el ritmo por diseño.
 - **Sin un grupo:** el CLI imprime `running WITHOUT a proxy (direct)` y se conecta directamente. Nada del registro, la creación de claves o la verificación cambia — solo desde dónde salen los paquetes.
-- Ejecuta `--screen` con cualquiera de los dos modos: prueba las salidas que tengas (o la ruta directa) contra DuiAPI antes de una ejecución real.
+- Ejecuta `--screen` en cualquiera de los dos modos: prueba las salidas que tengas (o la ruta directa) contra DuiAPI antes de una ejecución real.
 
 ## 📄 Archivos
 
@@ -175,9 +194,9 @@ node src/cli.js --help
 | `proxies.txt` | tus salidas — ignorado por git |
 | `outputs/` | registros de ejecución — ignorados por git |
 
-## 🔌 Conectar a 9Router
+## 🔌 Conectar con 9Router
 
-[9Router](https://9router.com) es un router autoalojado compatible con OpenAI. DuiAPI habla OpenAI, así que regístrate una vez y cada clave se convierte en una conexión:
+[9Router](https://9router.com) es un router autoalojado y compatible con OpenAI. DuiAPI habla OpenAI, así que regístrate una vez y cada clave se convierte en una conexión:
 
 ```bash
 node src/connect-9router.js --base http://localhost:20128 --password 123456
@@ -185,9 +204,9 @@ node src/connect-9router.js --base http://localhost:20128 --password 123456
 
 Predeterminados: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model deepseek-v4.1-flash`. Los modelos se sirven como `duiapi/<model id>`.
 
-## 🔌 Conectar a OmniRoute
+## 🔌 Conectar con OmniRoute
 
-[OmniRoute](https://omniroute.online) es un router autoalojado compatible con OpenAI. DuiAPI habla OpenAI, así que regístrate una vez y cada clave se convierte en una conexión:
+[OmniRoute](https://omniroute.online) es un router autoalojado y compatible con OpenAI. DuiAPI habla OpenAI, así que regístrate una vez y cada clave se convierte en una conexión:
 
 ```bash
 node src/connect-omniroute.js --base http://localhost:20128 --password 123456
@@ -201,9 +220,9 @@ Predeterminados: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model
 | --- | --- |
 | 🏢 Proveedor | **DuiAPI** — [duiapi.com](https://duiapi.com) |
 | 🎁 Qué da el proveedor | 1.000.000 de cuota inicial por cuenta |
-| 🔑 Qué te da una clave | una clave limitada a su propia cuenta: los 17 ids del catálogo en `https://duiapi.com/v1`, con la cuota de tu cuenta |
+| 🔑 Qué te da una clave | una clave limitada a su propia cuenta: los 17 ids del catálogo en `https://duiapi.com/v1`, según la cuota de tu cuenta |
 | 🌐 Forma de la API | compatible con OpenAI: `POST https://duiapi.com/v1/chat/completions` |
-| 🔒 Tus datos | solo se contacta con `duiapi.com` y tu backend de bandeja de entrada |
+| 🔒 Tus datos | solo se contacta con `duiapi.com` y el backend de tu bandeja de entrada |
 
 ## 🐞 Problemas
 
