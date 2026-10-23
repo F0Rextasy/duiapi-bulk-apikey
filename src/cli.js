@@ -116,10 +116,12 @@ function nextToken() {
     try {
       const out = require('child_process').execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', TOKEN_CMD], { encoding: 'utf8', timeout: 300000, windowsHide: true });
       const line = String(out).split(/\r?\n/).map((s) => s.trim()).filter(Boolean).pop() || '';
-      // Turnstile tokens are `<ver>.<seg>.<seg>…` (dots!) and the version prefix is not
-      // fixed: patchright-built tokens are `1.<payload>.<fp>`, the captcha-solve rail is
-      // `0.<seg>.<seg>`. With `[A-Za-z0-9_-]{40,}` both truncate at the first dot → CF
-      // `Turnstile verification failed`. Any dotted/plain run ≥40 chars is the token.
+      // Turnstile tokens are `<ver>.<seg>.<seg>…` (dots!) and the solver's prefix is
+      // not fixed: patchright-built tokens come out as `1.<payload>.<fp>`, the older
+      // captcha-solve rail as `0.<seg>.<seg>` (measured 2026-10-23 by lane TurnstileSolver:
+      // with `[A-Za-z0-9_-]{40,}` both were truncated at the first dot → CF
+      // `Turnstile verification failed` on every step, while the same token sent
+      // verbatim was accepted). Any dotted/plain run ≥40 chars is the token.
       const m = line.match(/[0-9A-Za-z_][A-Za-z0-9._-]{39,}$/) || line.match(/[A-Za-z0-9_.-]{40,}/) || line.match(/[A-Za-z0-9_-]{40,}/);
       if (m) { tokenIdx++; return m[0]; }
     } catch (e) { /* fall through */ }
@@ -331,7 +333,7 @@ async function pollCode(exit, box, { timeoutMs = 180000, pollMs = 5000 } = {}) {
       if (seen.has(m.id)) continue;
       seen.add(m.id);
       const r = await exitJson(exit, `${EMAILNATOR}/api/message/${encodeURIComponent(m.id)}`).catch(() => null);
-      const text = r ? r.body : '';
+      const text = r ? String(r.text || '') : ''; // exitJson returns {status,json,text} — `.body` is undefined (crash measured 2026-10-23 lane TurnstileSolver)
       const code = (text.match(/(?:code|verification|验证码|kodu)[^\d]{0,24}(\d{4,8})/i) || text.match(/\b(\d{6})\b/));
       if (code) return { code: code[1], subject: m.subject || '' };
     }
