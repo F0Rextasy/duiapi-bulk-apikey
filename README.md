@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Quick start](#-quick-start) · [🎁 Free tier](#-free-tier--how-much-you-get) · [🤖 Models](#-models--all-17-of-them) · [🧪 Use the API](#-how-to-use-the-api) · [✅ Verified](#-verified-working--every-key-is-tested) · [🧭 How it works](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [⚙️ Options](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Issues](#-issues)
+[🛠 Quick start](#-quick-start) · [🎁 Free tier](#-free-tier--how-much-you-get) · [🤖 Models](#-models--all-17-of-them) · [🧪 Use the API](#-how-to-use-the-api) · [✅ Verified](#-verified-working--every-key-is-tested) · [🧭 How it works](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Options](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Issues](#-issues)
 
 </div>
 
@@ -47,7 +47,7 @@ DuiAPI is a New API family panel: e-mail + password registration behind a Cloudf
 | Registration | e-mail + password + Cloudflare Turnstile |
 | E-mail verification | 6-char code from the inbox (18 s measured round-trip) |
 | Model catalogue | **17 ids** (panel pricing); zero-ratio free text models: none — quota is the free tier |
-| Rate limits | register endpoint answered `429` under bursts (24 attempts: 7 keys, 4× register-429, 5× mail-code misses) — pace the run, retries are safe |
+| Rate limits | register endpoint answered `429` under bursts (24 attempts: keys, 4× register-429, 5× mail-code misses) — pace the run, retries are safe |
 | The unit that scales | **one account = one key** (quota is per account) |
 
 > 💡 The free tier is set by DuiAPI and can change. Check the live numbers at [duiapi.com](https://duiapi.com) — and let the tool's own gate decide:
@@ -102,11 +102,6 @@ The launcher asks for the proxy list (optional — without one the CLI runs dire
 
 ## ✅ Verified working — every key is tested
 
-> **Quality gates.** Every key here passed a live `chat-200` before it was written to `keys.txt`
-> (dead keys are never shipped). Router combos follow the same rule at the model level: an entry is
-> added **only if the model answers `chat-200` and can call tools** — a model without tool support,
-> a dead key or a dead provider is dropped instead of added. Works with **9Router and OmniRoute**.
-
 | Check | Result |
 | --- | --- |
 | `GET /api/status` | **200**, register+e-mail verification+turnstile all true, sitekey present |
@@ -120,6 +115,12 @@ The launcher asks for the proxy list (optional — without one the CLI runs dire
 node src/cli.js --verify-only
 node src/cli.js --screen
 ```
+
+> **Quality gates.** Every key here passed a live `chat-200` before it was written to `keys.txt`
+> (dead keys are never shipped). Router combos follow the same rule at the model level: an entry is
+> added **only if the model answers `chat-200` and can call tools** — a model without tool support,
+> a dead key or a dead provider is dropped instead of added. Re-run the verify step any time;
+> failures are reported, never hidden.
 
 ## 🧭 How it works
 
@@ -192,6 +193,7 @@ node src/connect-omniroute.js --base http://localhost:20128 --password 123456
 ```
 
 Defaults: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model deepseek-v4.1-flash`. Models are served as `duiapi/<model id>`.
+
 ## 🔑 What one key gets you
 
 | | |

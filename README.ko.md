@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 빠른 시작](#-quick-start) · [🎁 무료 티어](#-free-tier--how-much-you-get) · [🤖 모델](#-models--all-17-of-them) · [🧪 API 사용하기](#-how-to-use-the-api) · [✅ 검증됨](#-verified-working--every-key-is-tested) · [🧭 작동 방식](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [⚙️ 옵션](#️-cli-options) · [🛰️ 프록시](#️-behind-a-proxy) · [🐞 이슈](#-issues)
+[🛠 빠른 시작](#-quick-start) · [🎁 무료 티어](#-free-tier--how-much-you-get) · [🤖 모델](#-models--all-17-of-them) · [🧪 API 사용하기](#-how-to-use-the-api) · [✅ 검증됨](#-verified-working--every-key-is-tested) · [🧭 작동 방식](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ 옵션](#️-cli-options) · [🛰️ 프록시](#️-behind-a-proxy) · [🐞 이슈](#-issues)
 
 </div>
 
@@ -33,9 +33,9 @@
 
 ---
 
-## ✨ 이 도구가 존재하는 이유
+## ✨ 왜 이 도구가 필요한가
 
-DuiAPI는 New API 계열 패널입니다: Cloudflare Turnstile 뒤에서 이메일 + 비밀번호로 가입하며, **모든 신규 계정에 1,000,000 시작 쿼터**가 주어집니다 (`quota_per_unit` 500,000; 첫 계정의 잔액은 1,000,000으로 표시됩니다). 카탈로그에는 할인 그룹(`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`)에 걸쳐 **17개의 모델 id**가 있으며, 채팅으로 검증된 기본값은 `deepseek-v4.1-flash`입니다. 쿼터는 계정에 귀속됩니다 — 그래서 이 도구는 **키 하나당 계정 하나**를 생성합니다.
+DuiAPI는 New API 계열 패널입니다: Cloudflare Turnstile 뒤에서 이메일 + 비밀번호로 가입하며, **모든 신규 계정에 1,000,000 시작 쿼터**가 주어집니다 (`quota_per_unit` 500,000, 첫 계정의 잔액은 1,000,000으로 표시됨). 카탈로그에는 할인 그룹(`default`, `deepseek-sale`, `glm-sale`, `qwen-sale`, `kimi-discount`)에 걸쳐 **17개의 모델 id**가 있으며, 채팅으로 검증된 기본값은 `deepseek-v4.1-flash`입니다. 쿼터는 계정에 귀속됩니다 — 그래서 이 도구는 **키 하나당 계정 하나**를 생성합니다.
 
 ## 🎁 무료 티어 — 얼마나 받을 수 있나
 
@@ -45,15 +45,15 @@ DuiAPI는 New API 계열 패널입니다: Cloudflare Turnstile 뒤에서 이메�
 | --- | --- |
 | 시작 쿼터 | 계정당 **1,000,000** (신규 계정에서 측정, `quotaStart`) |
 | 가입 | 이메일 + 비밀번호 + Cloudflare Turnstile |
-| 이메일 인증 | 받은편지함에서 온 6자리 코드 (왕복 18초 측정) |
-| 모델 카탈로그 | **17개 id** (패널 가격 기준); 비율 0인 무료 텍스트 모델: 없음 — 쿼터가 무료 티어입니다 |
-| 속도 제한 | 버스트 상황에서 register 엔드포인트가 `429`를 반환 (24회 시도: 키 7개, register-429 4회, 메일 코드 실패 5회) — 실행 속도를 조절하세요, 재시도는 안전합니다 |
+| 이메일 인증 | 받은편지함에서 받는 6자리 코드 (왕복 측정 18초) |
+| 모델 카탈로그 | **17개 id** (패널 가격 기준); 비율 0인 무료 텍스트 모델: 없음 — 쿼터가 곧 무료 티어 |
+| 속도 제한 | 버스트 상황에서 register 엔드포인트가 `429`를 반환함 (24회 시도: 키, 4× register-429, 5× 메일 코드 누락) — 실행 속도를 조절하세요, 재시도는 안전합니다 |
 | 확장되는 단위 | **계정 하나 = 키 하나** (쿼터는 계정당) |
 
-> 💡 무료 티어는 DuiAPI가 정하며 변경될 수 있습니다. 실시간 수치는 [duiapi.com](https://duiapi.com)에서 확인하세요 — 그리고 도구 자체의 게이트가 판단하게 하세요:
+> 💡 무료 티어는 DuiAPI가 정하며 변경될 수 있습니다. 실시간 수치는 [duiapi.com](https://duiapi.com)에서 확인하세요 — 그리고 도구 자체의 게이트가 판단하도록 두세요:
 
 ```bash
-node src/cli.js --verify-only     # every key in keys.txt is re-tested with a real chat call
+node src/cli.js --verify-only     # keys.txt의 모든 키가 실제 채팅 호출로 재검증됩니다
 ```
 
 ## 🤖 모델 — 17개 전부
@@ -87,19 +87,19 @@ print(c.chat.completions.create(model="deepseek-v4.1-flash",
 
 ```bash
 cd duiapi-bulk-apikey
-printf 'socks5://host:port\n' > proxies.txt   # optional — without it the tool runs direct
-node src/launcher.js        # interactive: mint / verify / screen / settings
+printf 'socks5://host:port\n' > proxies.txt   # 선택 사항 — 없으면 도구는 직접 연결로 실행됩니다
+node src/launcher.js        # 대화형: mint / verify / screen / settings
 
-# or directly — three Turnstile tokens per account (see the note below):
+# 또는 직접 — 계정당 세 개의 Turnstile 토큰 (아래 참고):
 node src/cli.js --count 5 --token "<tok1>,<tok2>,<tok3>"
-# or wire a solver:  node src/cli.js --count 5 --token-cmd "your-solver-command"
+# 또는 솔버 연결:  node src/cli.js --count 5 --token-cmd "your-solver-command"
 ```
 
 DuiAPI는 register/sendCode/login 호출을 Cloudflare Turnstile 뒤에 두고 있으므로, 호출당 새 토큰 하나가 소모됩니다 (계정당 세 개): 아무 브라우저에서 <https://duiapi.com>의 위젯을 풀고 `cf-turnstile-response` 값을 붙여넣거나, stdout에 토큰을 출력하는 솔버를 `--token-cmd`로 지정하세요. `keys.txt`는 실제 채팅 완료 이후에**만** 기록됩니다; `accounts.json`은 사용자 이름 / 이메일 / 키 id를 보관합니다.
 
 ### 🖱️ 런처
 
-런처는 프록시 목록(선택 사항 — 없으면 CLI는 직접 연결로 실행됩니다)과 개수를 묻고, 이를 기억한 뒤 CLI를 실행합니다 — 발급, 검증, 종료 스크리닝, 설정, 도움말, 9Router 연결.
+런처는 프록시 목록(선택 사항 — 없으면 CLI는 직접 연결로 실행됩니다)과 개수를 묻고, 이를 기억한 뒤 CLI를 실행합니다 — mint, verify, screen exits, settings, help, Connect to 9Router.
 
 ## ✅ 검증됨 — 모든 키가 테스트됩니다
 
@@ -117,6 +117,12 @@ node src/cli.js --verify-only
 node src/cli.js --screen
 ```
 
+> **품질 게이트.** 여기 있는 모든 키는 `keys.txt`에 기록되기 전에 실제 `chat-200`을 통과했습니다
+> (죽은 키는 절대 배포되지 않습니다). 라우터 조합도 모델 수준에서 같은 규칙을 따릅니다: 항목은
+> **모델이 `chat-200`으로 응답하고 도구 호출이 가능한 경우에만** 추가됩니다 — 도구 지원이 없는 모델,
+> 죽은 키, 죽은 제공자는 추가되지 않고 제거됩니다. 언제든지 검증 단계를 다시 실행하세요;
+> 실패는 보고되며, 절대 숨겨지지 않습니다.
+
 ## 🧭 작동 방식
 
 ```
@@ -131,11 +137,11 @@ inbox (one address per account)                                  a fresh address
 | 단계 | 호출 | 비고 |
 | --- | --- | --- |
 | status | `GET /api/status` | 게이트: register 켜짐, 이메일 인증 켜짐, turnstile 켜짐 (sitekey는 패널이 제공) |
-| 가입 | 패널 register 페이지 → Turnstile (브라우저에서 해결) → `POST /api/user/register` | 토큰은 일회용; register/sendCode마다 새 토큰 |
-| 인증 | `GET /api/verification?email=…` | 6자리 코드가 받은편지함에 도착; 브랜드 메일은 걸러짐 |
-| 로그인 | `POST /api/user/login` | 평문 비밀번호 (암호화 꺼짐); 세션 토큰 확보 |
-| 키 | `POST /api/token/` (+ 공개) | 키는 한 번 반환되며 즉시 디스크에 기록됨 |
-| 증명 | `POST /v1/chat/completions` | 콘텐츠와 함께 chat-200 = 키가 살아 있음 |
+| signup | 패널 register 페이지 → Turnstile (브라우저에서 풀이) → `POST /api/user/register` | 토큰은 일회용; register/sendCode마다 새 토큰 필요 |
+| verify | `GET /api/verification?email=…` | 6자리 코드가 받은편지함에 도착; 브랜드 메일은 걸러짐 |
+| login | `POST /api/user/login` | 평문 비밀번호 (암호화 꺼짐); 세션 토큰 확보 |
+| key | `POST /api/token/` (+ reveal) | 키는 한 번만 반환되며, 즉시 디스크에 기록됨 |
+| proof | `POST /v1/chat/completions` | 콘텐츠와 함께 chat-200 = 키가 살아 있음 |
 
 ## ⚙️ CLI 옵션
 
@@ -150,21 +156,21 @@ node src/cli.js --help
 | 환경 변수 | 기본값 | 의미 |
 | --- | --- | --- |
 | `DUIAPI_PROXIES` | `proxies.txt` | 출구 풀, 프록시당 한 줄 — 선택 사항: 풀이 없으면 CLI는 직접 연결 |
-| `DUIAPI_MODEL` | `deepseek-v4.1-flash` | 실시간 검증에 사용할 모델 |
+| `DUIAPI_MODEL` | `deepseek-v4.1-flash` | 실제 검증에 사용할 모델 |
 
 ## 🛰️ 프록시 뒤에서
 
-**선택 사항 — 대규모에서는 권장 (IP당 제한, 차단).** 이 도구는 프록시 없이도 작동합니다.
+**선택 사항 — 대규모에서는 권장 (IP당 제한, 차단).** 프록시 없이도 도구는 작동합니다.
 
-- **풀이 있을 때:** `--pool <file>`을 전달하거나 (또는 `DUIAPI_PROXIES` 설정) 모든 요청이 해당 목록의 출구를 통해 나갑니다 — 죽은 회선은 해당 시도를 실패시키고 도구는 계속 진행합니다. register가 손실이 큰 단계입니다 (버스트 시 `429`) — 도구는 다음 출구로 재시도하며 설계상 속도를 조절합니다.
-- **풀이 없을 때:** CLI는 `running WITHOUT a proxy (direct)`를 출력하고 직접 연결합니다. 가입, 키 발급, 검증에는 아무것도 달라지지 않습니다 — 패킷이 나가는 위치만 다를 뿐입니다.
+- **풀이 있을 때:** `--pool <file>`을 전달하거나 `DUIAPI_PROXIES`를 설정하면 모든 요청이 해당 목록의 출구를 통해 나갑니다 — 죽은 회선은 그 시도를 실패시키고 도구는 다음으로 넘어갑니다. register가 손실이 발생하는 단계이며 (`429` under burst) — 도구는 다음 출구로 재시도하고 설계상 속도를 조절합니다.
+- **풀이 없을 때:** CLI는 `running WITHOUT a proxy (direct)`를 출력하고 직접 연결합니다. 가입, 키 발급, 검증에는 아무 변화가 없습니다 — 패킷이 나가는 위치만 다를 뿐입니다.
 - 두 모드 모두에 대해 `--screen`을 실행하세요: 실제 실행 전에 보유한 출구(또는 직접 경로)를 DuiAPI에 대해 테스트합니다.
 
 ## 📄 파일
 
 | 경로 | 내용 |
 | --- | --- |
-| `keys.txt` | 실시간 검증된 키가 한 줄에 하나씩 — git-ignored |
+| `keys.txt` | 한 줄에 하나씩 실제 검증된 키 — git-ignored |
 | `accounts.json` | 사용자 이름 / 이메일 / 키 id — 복구 데이터 |
 | `proxies.txt` | 사용자의 출구 — git-ignored |
 | `outputs/` | 실행 로그 — git-ignored |
@@ -188,6 +194,7 @@ node src/connect-omniroute.js --base http://localhost:20128 --password 123456
 ```
 
 기본값: `--prefix duiapi`, `--base-url https://duiapi.com/v1`, `--model deepseek-v4.1-flash`. 모델은 `duiapi/<model id>`로 제공됩니다.
+
 ## 🔑 키 하나로 얻는 것
 
 | | |
@@ -200,7 +207,7 @@ node src/connect-omniroute.js --base http://localhost:20128 --password 123456
 
 ## 🐞 이슈
 
-DuiAPI가 register 형태, Turnstile sitekey 또는 쿼터 단계를 변경하면, 도구는 그 지점에서 멈추고 그렇게 알립니다. 명령과 정확한 출력을 포함해 **[이슈를 열어주세요](../../issues)**.
+DuiAPI가 register 형태, Turnstile sitekey 또는 쿼터 단계를 변경하면, 도구는 그 지점에서 멈추고 그 사실을 알립니다. 명령과 정확한 출력을 포함해 **[이슈를 열어주세요](../../issues)**.
 
 ## 📄 라이선스
 

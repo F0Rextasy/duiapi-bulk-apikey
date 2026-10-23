@@ -13,7 +13,7 @@
  * Usage:
  *   node src/connect-9router.js \
  *     --base http://localhost:20128 --password 123456 \
- *     --api-key t9jXE5…(48-char) [--name "DuiAPI"] [--prefix duiapi]
+ *     --api-key YOUR_KEY [--name "DuiAPI"] [--prefix duiapi]
  *
  *   node src/connect-9router.js                  # register every key in keys.txt
  *   node src/connect-9router.js --model <id>     # pin the connection's default model
@@ -25,7 +25,7 @@
  *   --name <name>      provider-node name       (default DuiAPI)
  *   --prefix <slug>    provider prefix in 9Router (default duiapi)
  *   --base-url <url>   provider base URL        (default https://duiapi.com/v1)
- *   --model <id>       connection default model (default MiniMaxAI/MiniMax-M2.7)
+ *   --model <id>       connection default model (default: provider's default model)
  *
  * Zero dependencies. Node.js >= 18.
  */
@@ -33,7 +33,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const UA = 'duiapi-bulk-9router-connector/1.0';
+const UA = 'duiapi-bulk-9router-connector/1.0'
 
 const DEFAULTS = {
   base: 'http://localhost:20128',
